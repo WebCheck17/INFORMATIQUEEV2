@@ -45,11 +45,25 @@ async function bridgeFetch(method, path, body = null) {
   
   try {
     const res = await fetch(url, options);
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Bridge error ${res.status}: ${text}`);
+    const contentType = res.headers.get('content-type') || '';
+    const responseText = await res.text(); // Baca sebagai text dulu
+    
+    console.log(`Bridge ${method} ${path} → Status: ${res.status}, Content-Type: ${contentType}`);
+    console.log('Response body:', responseText.substring(0, 500)); // Log 500 char pertama
+    
+    // Cek kalau response HTML (bukan JSON)
+    if (responseText.trim().startsWith('<')) {
+      throw new Error(`Bridge returned HTML instead of JSON. Status: ${res.status}. Body: ${responseText.substring(0, 200)}`);
     }
-    return res.json();
+    
+    // Parse JSON
+    try {
+      const data = JSON.parse(responseText);
+      return data;
+    } catch (parseErr) {
+      throw new Error(`Invalid JSON from bridge: ${parseErr.message}. Body: ${responseText.substring(0, 200)}`);
+    }
+    
   } catch (err) {
     console.error('Bridge fetch error:', err);
     throw err;
