@@ -1,4 +1,5 @@
-// backend/server.js
+require('dotenv').config();
+
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
@@ -7,7 +8,7 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 
-// CORS - allow all origins (dev only!)
+// CORS
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -18,15 +19,18 @@ app.use(express.json());
 
 // MySQL Pool
 const db = mysql.createPool({
-  host: 'sql107.infinityfree.com',
-  user: 'if0_40137840',
-  password: 'VSlalRFB50ui',
-  database: 'if0_40137840_classhub',
-  port: 3306,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
+
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || 'SECRET_KEY';
 
 // JWT Middleware
 const authMiddleware = (req, res, next) => {
@@ -38,7 +42,7 @@ const authMiddleware = (req, res, next) => {
   }
   
   try {
-    req.user = jwt.verify(token, 'SECRET_KEY');
+    req.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' });
@@ -68,7 +72,6 @@ app.post('/api/auth/login', async (req, res) => {
     
     const user = rows[0];
     
-    // Cek password
     const valid = await bcrypt.compare(password, user.password);
     console.log("Password valid:", valid);
     
@@ -76,10 +79,9 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Password salah' });
     }
     
-    // Generate token
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role_id },
-      'SECRET_KEY',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
     
@@ -116,7 +118,6 @@ app.post('/api/auth/register', async (req, res) => {
   console.log("=== REGISTER DEBUG ===");
   console.log("Body:", req.body);
   
-  // Validasi
   if (!username || !email || !password || !name) {
     return res.status(400).json({ error: 'Semua field wajib diisi' });
   }
@@ -126,7 +127,6 @@ app.post('/api/auth/register', async (req, res) => {
     : '/images/users/default-1.png';
   
   try {
-    // Cek exists
     const [exists] = await db.query(
       'SELECT * FROM users WHERE username = ? OR email = ?',
       [username, email]
@@ -136,10 +136,8 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Username atau email sudah terdaftar' });
     }
     
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Insert - PERHATIKAN URUTAN!
     const [result] = await db.query(
       `INSERT INTO users 
         (role_id, username, email, password, name, avatar, nim, kelas, jurusan, bio, is_active, created_at) 
@@ -340,9 +338,5 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Start server
-const PORT = 3001;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ API running on http://localhost:${PORT}`);
-  console.log(`✅ Health check: http://localhost:${PORT}/api/health`);
-});
+// Export untuk Vercel
+module.exports = app;
