@@ -177,4 +177,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', bridge: BRIDGE_URL });
 });
 
-module.exports = app;
+module.exports = (req, res) => {
+  app(req, res);
+};
