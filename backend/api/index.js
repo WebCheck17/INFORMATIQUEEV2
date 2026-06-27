@@ -70,6 +70,25 @@ async function bridgeFetch(method, path, body = null) {
   }
 }
 
+app.get('/api/test-bridge', async (req, res) => {
+  try {
+    // Test POST ke bridge
+    const testRes = await fetch(`${BRIDGE_URL}?path=auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'test', password: 'test' })
+    });
+    const text = await testRes.text();
+    res.json({
+      status: testRes.status,
+      finalUrl: testRes.url,
+      response: text.substring(0, 500)
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ========== AUTH ==========
 app.post('/api/auth/login', async (req, res) => {
   console.log('Login request:', req.body);
