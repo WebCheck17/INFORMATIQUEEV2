@@ -3,6 +3,14 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+});
+
 const app = express();
 
 // CORS
@@ -197,3 +205,8 @@ const server = app;
 module.exports = (req, res) => {
   return server(req, res);
 };
+
+app.use((err, req, res, next) => {
+  console.error('Express Error:', err);
+  res.status(500).json({ error: err.message, stack: err.stack });
+});
