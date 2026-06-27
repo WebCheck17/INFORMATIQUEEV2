@@ -18,10 +18,10 @@ app.use(express.json());
 
 // MySQL Pool
 const db = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'classhub',
+  host: 'sql107.infinityfree.com',
+  user: 'if0_40137840',
+  password: 'VSlalRFB50ui',
+  database: 'if0_40137840_classhub',
   port: 3306,
   waitForConnections: true,
   connectionLimit: 10,
