@@ -5,17 +5,25 @@ const cors = require('cors');
 
 const app = express();
 
-app.use(cors({ origin: '*' }));
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://informatiquee.vercel.app');
+// CORS - allow all origins (untuk testing)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// Handle OPTIONS preflight — WAJIB ADA!
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next();
+  res.sendStatus(200);
 });
+
 app.use(express.json());
 
-// URL bridge.php di InfinityFree
+// URL bridge.php
 const BRIDGE_URL = 'https://takwa-tracer.page.gd/bridge.php';
 
 // Helper fetch ke bridge
