@@ -50,11 +50,13 @@ async function bridgeFetch(method, path, body = null) {
 
 // ========== AUTH ==========
 app.post('/api/auth/login', async (req, res) => {
+  console.log('Login request:', req.body);
   try {
     const data = await bridgeFetch('POST', 'auth/login', req.body);
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Login error:', err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 
