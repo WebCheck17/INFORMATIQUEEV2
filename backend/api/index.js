@@ -5,7 +5,7 @@ const cors = require('cors');
 
 const app = express();
 
-// CORS - allow all origins (untuk testing)
+// CORS
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -13,7 +13,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Handle OPTIONS preflight — WAJIB ADA!
+// Handle OPTIONS preflight
 app.options('*', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -23,8 +23,8 @@ app.options('*', (req, res) => {
 
 app.use(express.json());
 
-// URL bridge.php
-const BRIDGE_URL = 'https://takwa-tracer.page.gd/bridge.php';
+// URL bridge.php di InfinityFree
+const BRIDGE_URL = process.env.BRIDGE_URL || 'https://takwa-tracer.page.gd/bridge.php';
 
 // Helper fetch ke bridge
 async function bridgeFetch(method, path, body = null) {
@@ -35,8 +35,17 @@ async function bridgeFetch(method, path, body = null) {
   };
   if (body) options.body = JSON.stringify(body);
   
-  const res = await fetch(url, options);
-  return res.json();
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Bridge error ${res.status}: ${text}`);
+    }
+    return res.json();
+  } catch (err) {
+    console.error('Bridge fetch error:', err);
+    throw err;
+  }
 }
 
 // ========== AUTH ==========
@@ -177,6 +186,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', bridge: BRIDGE_URL });
 });
 
+// ========== EXPORT UNTUK VERCEL ==========
+// Cara 1: Langsung export app (coba dulu ini)
+// module.exports = app;
+
+// Cara 2: Kalau cara 1 gagal, pakai ini:
 const server = app;
 module.exports = (req, res) => {
   return server(req, res);
