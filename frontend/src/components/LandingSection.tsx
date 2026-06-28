@@ -12,13 +12,18 @@ interface LandingSectionProps {
 }
 
 // Helper untuk resolve image path
-const getImageUrl = (path: string | null | undefined): string => {
-  if (!path) return '/images/default-1.png';
-  if (path.startsWith('http')) return path;
-  if (path.startsWith('/images/')) return path;
-  if (path.startsWith('/')) return path;
-  return `/images/${path}`;
-};
+import { getImageUrl } from "../services/imageHelper";
+
+// Usage
+<img 
+  src={getImageUrl(memory.imageUrl)} 
+  alt={memory.title}
+  className="w-full h-full object-cover"
+  loading="lazy"
+  onError={(e) => {
+    (e.target as HTMLImageElement).src = '/images/default-1.png';
+  }}
+/>
 
 export default function LandingSection({
   onNavigateToTab,
