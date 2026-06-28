@@ -1,4 +1,4 @@
-const API_BASE = 'informatiquee.ct.ws/api';
+const API_BASE = 'https://informatiquee.ct.ws/api';
 
 async function handleResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => ({ error: 'Unknown error' }));
