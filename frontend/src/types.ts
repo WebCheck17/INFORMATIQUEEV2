@@ -147,3 +147,43 @@ export interface UploadedFile {
   owner: string;
   url: string;
 }
+
+// types.ts
+export interface ClassPhotoMemory {
+  id: number;
+  imageUrl: string;        // dari image_url
+  caption: string;         // dari title atau description
+  date: string;            // dari created_at
+  authorName?: string;     // dari author_name
+  authorAvatar?: string;   // dari author_avatar
+  likesCount?: number;     // dari likes_count
+  commentsCount?: number;  // dari comments_count
+}
+
+export interface DosenAssignment {
+  id: number;
+  title: string;
+  course: string;          // dari mata_kuliah
+  dosen: string;
+  deadline: string;        // dari deadline_at
+  description?: string;
+  priority?: string;
+  status?: string;
+}
+
+export interface ChatRoom {
+  id: number;
+  name: string;
+  description?: string;
+  messageCount?: number;   // dari message_count
+  createdByName?: string;  // dari created_by_name
+}
+
+export interface User {
+  id: number;
+  name: string;
+  username: string;
+  email: string;
+  avatar?: string;
+  roleName?: string;
+}
