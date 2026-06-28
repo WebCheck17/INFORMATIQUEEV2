@@ -3,34 +3,7 @@ import { motion } from "motion/react";
 import { Image as ImageIcon, Calendar, MessageSquare, Users, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { api } from "../services/api";
 import { INITIAL_MEMORIES, INITIAL_ASSIGNMENTS, INITIAL_ROOMS } from "../data";
-
-// Types
-interface ClassPhotoMemory {
-  id: number | string;
-  imageUrl: string;
-  caption: string;
-  date: string;
-  authorName?: string;
-  likesCount?: number;
-  commentsCount?: number;
-}
-
-interface DosenAssignment {
-  id: number | string;
-  title: string;
-  course: string;
-  dosen: string;
-  deadline: string;
-  description?: string;
-  priority?: string;
-}
-
-interface ChatRoom {
-  id: number | string;
-  name: string;
-  description?: string;
-  messageCount?: number;
-}
+import { ClassPhotoMemory, DosenAssignment, ChatRoom } from "../types";
 
 interface LandingSectionProps {
   onNavigateToTab: (tab: string) => void;
@@ -38,8 +11,7 @@ interface LandingSectionProps {
   isLoggedIn: boolean;
 }
 
-// ✅ FIX: Image helper yang robust
-// LandingSection.tsx
+// Helper untuk resolve image path
 const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return '/images/default-1.png';
   if (path.startsWith('http')) return path;
@@ -88,15 +60,15 @@ export default function LandingSection({
       const posts = await api.getPosts();
       const mappedMemories: ClassPhotoMemory[] = posts.slice(0, 3).map((post: any) => ({
         id: post.id,
+        title: post.title || post.description || "Untitled",
         imageUrl: getImageUrl(post.image_url),
-        caption: post.title || post.description || "Untitled",
         date: new Date(post.created_at).toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'long',
           year: 'numeric',
         }),
-        authorName: post.author_name,
-        likesCount: parseInt(post.likes_count) || 0,
+        uploaderName: post.author_name,
+        likes: parseInt(post.likes_count) || 0,
         commentsCount: parseInt(post.comments_count) || 0,
       }));
       setMemories(mappedMemories);
@@ -104,18 +76,18 @@ export default function LandingSection({
     } catch (err) {
       console.error("Failed to fetch posts:", err);
       setErrors(prev => ({ ...prev, memories: "Gagal memuat kenangan" }));
-      // ✅ FIX: Fallback ke mock data dengan local images
+      // Fallback ke mock data
       setMemories(INITIAL_MEMORIES.map(m => ({
         id: m.id,
+        title: m.title,
         imageUrl: getImageUrl(m.imageUrl),
-        caption: m.title,
         date: new Date(m.date).toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'long',
           year: 'numeric',
         }),
-        authorName: m.uploaderName,
-        likesCount: m.likes,
+        uploaderName: m.uploaderName,
+        likes: m.likes,
         commentsCount: m.comments?.length || 0,
       })));
       setLoading(prev => ({ ...prev, memories: false }));
@@ -179,7 +151,7 @@ export default function LandingSection({
 
   const recentMemories = memories.length > 0 ? memories : [];
   const upcomingAssignments = assignments.length > 0 
-    ? assignments.filter(a => new Date(a.deadline) > new Date()).slice(0, 3)
+    ? assignments.filter(a => new Date(a.deadline || a.dueDate || '') > new Date()).slice(0, 3)
     : [];
   const activeRooms = rooms.length > 0 ? rooms : [];
   const displayUserCount = userCount || activeRooms.length;
@@ -321,7 +293,7 @@ export default function LandingSection({
                 <div className="aspect-video bg-slate-200 overflow-hidden">
                   <img 
                     src={getImageUrl(memory.imageUrl)} 
-                    alt={memory.caption}
+                    alt={memory.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
                     onError={(e) => {
@@ -330,11 +302,11 @@ export default function LandingSection({
                   />
                 </div>
                 <div className="p-3">
-                  <p className="text-[11px] font-black text-slate-900 truncate">{memory.caption}</p>
+                  <p className="text-[11px] font-black text-slate-900 truncate">{memory.title}</p>
                   <p className="text-[9px] font-bold text-slate-500 mt-1">{memory.date}</p>
-                  {memory.authorName && (
+                  {memory.uploaderName && (
                     <p className="text-[9px] font-bold text-[#FF007F] mt-1">
-                      by {memory.authorName}
+                      by {memory.uploaderName}
                     </p>
                   )}
                 </div>
@@ -377,13 +349,13 @@ export default function LandingSection({
                   <div>
                     <p className="text-xs font-black text-slate-900">{assignment.title}</p>
                     <p className="text-[10px] font-bold text-slate-500">
-                      {assignment.course} • {assignment.dosen}
+                      {assignment.course || assignment.subject} • {assignment.dosen || assignment.lecturer}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-black text-[#FF007F] bg-[#FFF5B7] px-2 py-1 border border-black rounded-lg">
-                    {new Date(assignment.deadline).toLocaleDateString('id-ID', { 
+                    {new Date(assignment.deadline || assignment.dueDate || '').toLocaleDateString('id-ID', { 
                       day: 'numeric', 
                       month: 'short' 
                     })}
