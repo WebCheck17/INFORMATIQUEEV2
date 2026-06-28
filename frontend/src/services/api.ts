@@ -1,4 +1,3 @@
-// services/api.ts
 const API_BASE = 'https://informatiquee-backend.vercel.app/api';
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -14,12 +13,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
   
-  // Build config properly - jangan spread sembarangan
   const config: RequestInit = {
     method: options?.method || 'GET',
   };
 
-  // Headers
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -31,36 +28,20 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
   
   config.headers = headers;
 
-  // Body - hanya untuk method selain GET
   if (options?.body && config.method !== 'GET') {
     config.body = options.body;
   }
 
-  console.log("API REQUEST:", {
-    url,
-    method: config.method,
-    body: config.body ? JSON.parse(config.body as string) : undefined
-  });
-
   const response = await fetch(url, config);
-  
-  console.log("API RESPONSE:", {
-    status: response.status,
-    statusText: response.statusText
-  });
-
   return handleResponse<T>(response);
 }
 
-// API Endpoints
 export const api = {
-  // Auth
-  login: (username: string, password: string) => {
-    return fetchAPI<{ token: string; user: any }>('/auth/login', {
+  login: (username: string, password: string) => 
+    fetchAPI<{ token: string; user: any }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
-    });
-  },
+    }),
   
   register: (data: any) => 
     fetchAPI<any>('/auth/register', {
@@ -73,7 +54,6 @@ export const api = {
       headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
     }),
 
-  // Users
   getUsers: () => fetchAPI<any[]>('/users'),
   
   getUserCount: async () => {
@@ -83,7 +63,6 @@ export const api = {
   
   getUserById: (id: number) => fetchAPI<any>(`/users/${id}`),
 
-  // Posts (Memories)
   getPosts: () => fetchAPI<any[]>('/posts'),
   
   getPostBySlug: (slug: string) => fetchAPI<any>(`/posts/${slug}`),
@@ -103,7 +82,6 @@ export const api = {
   
   getPostComments: (id: number) => fetchAPI<any[]>(`/posts/${id}/comments`),
 
-  // Deadlines (Assignments)
   getDeadlines: () => fetchAPI<any[]>('/deadlines'),
   
   getDeadlineBySlug: (slug: string) => fetchAPI<any>(`/deadlines/${slug}`),
@@ -122,7 +100,6 @@ export const api = {
       body: JSON.stringify({ status }),
     }),
 
-  // Chat
   getChatRooms: () => fetchAPI<any[]>('/chat/rooms'),
   
   getChatRoomById: (id: number) => fetchAPI<any>(`/chat/rooms/${id}`),
@@ -145,13 +122,11 @@ export const api = {
       headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
     }),
 
-  // Notifications
   getNotifications: () => 
     fetchAPI<any[]>('/notifications', {
       headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
     }),
 
-  // Settings
   getSettings: () => fetchAPI<any>('/settings'),
   
   updateSettings: (data: any) => 
@@ -161,7 +136,6 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  // Activity Logs
   getActivityLogs: () => 
     fetchAPI<any[]>('/activity-logs', {
       headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
