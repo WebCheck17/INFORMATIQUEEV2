@@ -1,0 +1,370 @@
+:root {
+  --primary: #4A90E2;
+  --secondary: #2C3E50;
+  --accent: #E74C3C;
+  --bg: #0f0f1a;
+  --text: #eee;
+  --card: #1a1a2e;
+}
+
+[data-theme="light"] {
+  --bg: #f8f9fa;
+  --text: #222;
+  --card: #ffffff;
+  --primary: #2C7AED;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  transition: background 0.4s;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(15, 15, 26, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  padding: 15px 5%;
+}
+
+[data-theme="light"] .navbar {
+  background: rgba(255,255,255,0.95);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.nav-links a {
+  color: var(--text);
+  text-decoration: none;
+  margin-left: 30px;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: var(--primary);
+}
+
+/* === THEME TOGGLE SWITCH (dari request kamu) === */
+.checkbox-wrapper-25 {
+  display: inline-block;
+}
+
+.checkbox-wrapper-25 input[type="checkbox"] {
+  background-image: -webkit-linear-gradient(hsla(0,0%,0%,.1), hsla(0,0%,100%,.1)),
+                    -webkit-linear-gradient(left, #f66 50%, #6cf 50%);
+  background-size: 100% 100%, 200% 100%;
+  background-position: 0 0, 15px 0;
+  border-radius: 25px;
+  box-shadow: inset 0 1px 4px hsla(0,0%,0%,.5),
+              inset 0 0 10px hsla(0,0%,0%,.5),
+              0 0 0 1px hsla(0,0%,0%,.1),
+              0 -1px 2px 2px hsla(0,0%,0%,.25),
+              0 2px 2px 2px hsla(0,0%,100%,.75);
+  cursor: pointer;
+  height: 25px;
+  padding-right: 25px;
+  width: 75px;
+  -webkit-appearance: none;
+  -webkit-transition: .25s;
+  position: relative;
+}
+
+.checkbox-wrapper-25 input[type="checkbox"]:after {
+  background-color: #eee;
+  background-image: -webkit-linear-gradient(hsla(0,0%,100%,.1), hsla(0,0%,0%,.1));
+  border-radius: 25px;
+  box-shadow: inset 0 1px 1px 1px hsla(0,0%,100%,1),
+              inset 0 -1px 1px 1px hsla(0,0%,0%,.25),
+              0 1px 3px 1px hsla(0,0%,0%,.5),
+              0 0 2px hsla(0,0%,0%,.25);
+  content: '';
+  display: block;
+  height: 25px;
+  width: 50px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.checkbox-wrapper-25 input[type="checkbox"]:checked {
+  background-position: 0 0, 35px 0;
+  padding-left: 25px;
+  padding-right: 0;
+  transition: all .25s ease;
+}
+
+/* Support dark/light mode */
+[data-theme="light"] .checkbox-wrapper-25 input[type="checkbox"] {
+  filter: brightness(0.95);
+}
+
+.hero {
+  height: 100vh;
+  background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.75)), url('https://source.unsplash.com/random/1920x1080/?university,technology') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+
+.hero-content h1 {
+  font-size: 4.8rem;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.hero-content h2 {
+  font-size: 2.6rem;
+  margin-bottom: 15px;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 25px;
+  padding: 14px 36px;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(74, 144, 226, 0.4);
+}
+
+.section {
+  padding: 100px 5%;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+h2 {
+  text-align: center;
+  font-size: 3rem;
+  margin-bottom: 50px;
+  color: var(--primary);
+  position: relative;
+}
+
+h2:after {
+  content: '';
+  width: 80px;
+  height: 4px;
+  background: var(--primary);
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  transition: all 0.4s;
+  cursor: pointer;
+}
+
+.gallery-item:hover {
+  transform: scale(1.04);
+  box-shadow: 0 15px 30px rgba(74, 144, 226, 0.35);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 25px;
+}
+
+.timeline {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.timeline-item {
+  background: var(--card);
+  padding: 25px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  border-left: 5px solid var(--primary);
+  transition: all 0.3s;
+}
+
+.message-form {
+  max-width: 700px;
+  margin: 0 auto 50px;
+  background: var(--card);
+  padding: 30px;
+  border-radius: 16px;
+}
+
+.message-form input,
+.message-form textarea {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 8px;
+  background: #2a2a3a;
+  color: white;
+}
+
+[data-theme="light"] .message-form input,
+[data-theme="light"] .message-form textarea {
+  background: #f1f1f1;
+  color: #222;
+}
+
+.messages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.message-card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.lightbox {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.92);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox img {
+  max-width: 90%;
+  max-height: 85vh;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+}
+
+.close {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  font-size: 3rem;
+  color: white;
+  cursor: pointer;
+}
+
+.download-btn {
+  position: absolute;
+  bottom: 40px;
+  background: var(--primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+footer {
+  text-align: center;
+  padding: 40px;
+  background: #0a0a12;
+  color: #888;
+}
+
+/* Photobox Card Style */
+.photo-card {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  transition: all 0.4s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-card:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+}
+
+.photo-card img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.photo-card .card-info {
+  margin-top: 12px;
+  text-align: center;
+  color: #222;
+  font-size: 0.95rem;
+}
+
+.photo-card .card-info .caption {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.photo-card .card-info .date {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* Random slight rotation */
+.photo-card:nth-child(odd)   { transform: rotate(-2deg); }
+.photo-card:nth-child(3n)    { transform: rotate(3deg); }
+.photo-card:nth-child(4n)    { transform: rotate(-1.5deg); }
+
+.photo-card:hover {
+  transform: scale(1.05) rotate(0deg) !important;
+}
+

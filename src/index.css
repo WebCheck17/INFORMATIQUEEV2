@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --shadow-premium: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.25);
+  --shadow-glow-cyan: 0 0 20px rgba(6, 182, 212, 0.35);
+}
+
+/* Neubrutalist Core Style Overrides */
+.neo-box {
+  background-color: #ffffff;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+  border-radius: 16px;
+  transition: all 0.15s ease-out;
+}
+
+.neo-box:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px 0px #000000;
+}
+
+.neo-box-pink {
+  background-color: #FF007F; /* Vivid Neon Pink */
+  color: #ffffff;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+  border-radius: 16px;
+}
+
+.neo-box-yellow {
+  background-color: #FFF500; /* Vibrant Lemon Yellow */
+  color: #000000;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+  border-radius: 16px;
+}
+
+.neo-box-green {
+  background-color: #a6ff00; /* Vivid Lime Green */
+  color: #000000;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+  border-radius: 16px;
+}
+
+.neo-box-orange {
+  background-color: #FF5500; /* Electric Orange */
+  color: #ffffff;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+  border-radius: 16px;
+}
+
+.neo-box-purple {
+  background-color: #BF00FF; /* Electric Purple */
+  color: #ffffff;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+  border-radius: 16px;
+}
+
+.neo-box-cyan {
+  background-color: #00FFFF; /* Electric Cyan */
+  color: #000000;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+  border-radius: 16px;
+}
+
+.neo-box-blue {
+  background-color: #1F51FF; /* Electric Blue */
+  color: #ffffff;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+  border-radius: 16px;
+}
+
+.neo-btn {
+  border: 3px solid #000000;
+  box-shadow: 4px 4px 0px 0px #000000;
+  transition: all 0.1s ease-out;
+  cursor: pointer;
+}
+
+.neo-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px 0px #000000;
+}
+
+.neo-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0px 0px #000000;
+}
+
+.neo-btn-sm {
+  border: 2px solid #000000;
+  box-shadow: 2px 2px 0px 0px #000000;
+  transition: all 0.1s ease-out;
+  cursor: pointer;
+}
+
+.neo-btn-sm:hover {
+  transform: translate(-0.5px, -0.5px);
+  box-shadow: 2.5px 2.5px 0px 0px #000000;
+}
+
+.neo-btn-sm:active {
+  transform: translate(1.5px, 1.5px);
+  box-shadow: 0.5px 0.5px 0px 0px #000000;
+}
+
+.neo-input {
+  border: 3px solid #000000 !important;
+  box-shadow: 3px 3px 0px 0px #000000;
+  border-radius: 12px;
+  background-color: #ffffff;
+  outline: none;
+  font-weight: 700;
+  transition: all 0.1s ease-out;
+}
+
+.neo-input:focus {
+  background-color: #fff9db;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.neo-badge {
+  border: 2px solid #000000;
+  font-weight: 800;
+  box-shadow: 2px 2px 0px 0px #000000;
+}
+
+/* Custom premium scrollbar for lists and chat boxes */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-left: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000000;
+  border: 2px solid #f1f5f9;
+  border-radius: 4px;
+}
+
+/* Skeleton loader animations */
+@keyframes neo-shimmer {
+  0% {
+    background-color: #e2e8f0;
+  }
+  50% {
+    background-color: #cbd5e1;
+  }
+  100% {
+    background-color: #e2e8f0;
+  }
+}
+
+.neo-shimmer {
+  animation: neo-shimmer 1.5s infinite ease-in-out;
+  border: 2px solid #000000;
+}
+
+/* Glow animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 3px 3px 0px 0px #000000;
+  }
+  50% {
+    box-shadow: 5px 5px 0px 0px #000000;
+  }
+}
+
+.glow-active {
+  animation: pulse-glow 2s infinite;
+}
+
