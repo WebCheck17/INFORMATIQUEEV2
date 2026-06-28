@@ -1,20 +1,25 @@
+// types.ts - Versi Final yang Konsisten
+
+// ========== USER ==========
 export interface UserProfile {
-  id: string;
+  id: string | number;
   username: string;
   name: string;
-  nim: string;
-  kelas: string;
-  jurusan: string;
-  bio: string;
-  email: string;
-  role: "Admin" | "Member" | "Guest";
-  photoUrl: string;
-  dateJoined: string;
-  isActive: boolean;
-  streakDays: number;
-  hasCheckedIn: boolean;
-  bgColor?: string; // Optional color for avatar
-  initials?: string; // Optional initials
+  nim?: string;
+  kelas?: string;
+  jurusan?: string;
+  bio?: string;
+  email?: string;
+  role: string;  // "admin" | "member" | "guest" | dll (lowercase dari backend)
+  photoUrl?: string;
+  avatar?: string;
+  gender?: string;
+  dateJoined?: string;
+  isActive?: boolean;
+  streakDays?: number;
+  hasCheckedIn?: boolean;
+  bgColor?: string;
+  initials?: string;
 }
 
 export interface StudentFriend {
@@ -26,6 +31,7 @@ export interface StudentFriend {
   isOnline: boolean;
 }
 
+// ========== COMMENTS ==========
 export interface CommentReply {
   id: string;
   authorName: string;
@@ -43,34 +49,44 @@ export interface Comment {
   replies?: CommentReply[];
 }
 
+// ========== MEMORIES / GALLERY ==========
 export interface ClassPhotoMemory {
-  id: string;
+  id: string | number;
   title: string;
-  description: string;
+  caption?: string;  // alias untuk title
+  description?: string;
   imageUrl: string;
-  videoUrl?: string; // Optional support for video upload
-  category: string; // "Kuliah" | "Makrab" | "Wisuda" | "Santai" | "Project"
-  tags: string[];
+  videoUrl?: string;
+  category?: string;
+  tags?: string[];
   date: string;
-  uploaderName: string;
-  likes: number;
-  hasLiked: boolean;
-  views: number;
+  uploaderName?: string;
+  authorName?: string;  // alias untuk uploaderName
+  authorAvatar?: string;
+  likes?: number;
+  likesCount?: number;  // alias untuk likes
+  hasLiked?: boolean;
+  views?: number;
   isPinned?: boolean;
   isFeatured?: boolean;
-  comments: Comment[];
   isBookmarked?: boolean;
+  comments?: Comment[];
+  commentsCount?: number;
 }
 
+// ========== ASSIGNMENTS / DEADLINES ==========
 export interface DosenAssignment {
-  id: string;
-  subject: string; // Mata Kuliah
-  lecturer: string; // Nama Dosen
-  title: string; // Detail tugas
-  description: string;
-  dueDate: string; // Tanggal pengumpulan (ISO or readable string)
-  status: "Belum" | "Selesai";
-  priority: "Tinggi" | "Sedang" | "Biasa";
+  id: string | number;
+  subject?: string;      // alias untuk course
+  course?: string;       // dari backend
+  lecturer?: string;     // alias untuk dosen
+  dosen?: string;        // dari backend
+  title: string;
+  description?: string;
+  dueDate?: string;      // alias untuk deadline
+  deadline?: string;     // dari backend
+  status?: string;
+  priority?: string;
   attachment?: {
     name: string;
     size: string;
@@ -79,6 +95,7 @@ export interface DosenAssignment {
   notes?: string;
 }
 
+// ========== CHAT ==========
 export interface ChatMessage {
   id: string;
   roomId: string;
@@ -87,7 +104,7 @@ export interface ChatMessage {
   senderAvatar: string;
   senderRole: string;
   text: string;
-  timestamp: string; // e.g. "10:12 WIB"
+  timestamp: string;
   isPinned?: boolean;
   replyToId?: string;
   replyToText?: string;
@@ -101,13 +118,16 @@ export interface ChatMessage {
 }
 
 export interface ChatRoom {
-  id: string;
+  id: string | number;
   name: string;
-  category: string;
-  description: string;
-  isPrivate: boolean;
+  category?: string;
+  description?: string;
+  isPrivate?: boolean;
+  messageCount?: number;
+  createdByName?: string;
 }
 
+// ========== NOTIFICATIONS ==========
 export interface ClassNotification {
   id: string;
   type: "like" | "comment" | "reply" | "deadline" | "mention" | "upload" | "room";
@@ -117,6 +137,7 @@ export interface ClassNotification {
   isRead: boolean;
 }
 
+// ========== ACTIVITY LOGS ==========
 export interface ActivityLog {
   id: string;
   username: string;
@@ -125,19 +146,21 @@ export interface ActivityLog {
   timestamp: string;
 }
 
+// ========== SETTINGS ==========
 export interface WebsiteSettings {
   websiteName: string;
   logoUrl: string;
   bannerUrl: string;
-  themeColor: string; // e.g. "indigo" | "violet" | "cyan"
+  themeColor: string;
   isDarkMode: boolean;
   allowRegister: boolean;
-  maxUploadSize: number; // in MB
+  maxUploadSize: number;
   className: string;
   semester: string;
   allowGuestAccess: boolean;
 }
 
+// ========== FILES ==========
 export interface UploadedFile {
   id: string;
   name: string;
@@ -146,44 +169,4 @@ export interface UploadedFile {
   uploadedAt: string;
   owner: string;
   url: string;
-}
-
-// types.ts
-export interface ClassPhotoMemory {
-  id: number;
-  imageUrl: string;        // dari image_url
-  caption: string;         // dari title atau description
-  date: string;            // dari created_at
-  authorName?: string;     // dari author_name
-  authorAvatar?: string;   // dari author_avatar
-  likesCount?: number;     // dari likes_count
-  commentsCount?: number;  // dari comments_count
-}
-
-export interface DosenAssignment {
-  id: number;
-  title: string;
-  course: string;          // dari mata_kuliah
-  dosen: string;
-  deadline: string;        // dari deadline_at
-  description?: string;
-  priority?: string;
-  status?: string;
-}
-
-export interface ChatRoom {
-  id: number;
-  name: string;
-  description?: string;
-  messageCount?: number;   // dari message_count
-  createdByName?: string;  // dari created_by_name
-}
-
-export interface User {
-  id: number;
-  name: string;
-  username: string;
-  email: string;
-  avatar?: string;
-  roleName?: string;
 }
