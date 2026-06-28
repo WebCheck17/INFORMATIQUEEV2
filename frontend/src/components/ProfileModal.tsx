@@ -11,6 +11,8 @@ import {
   Upload,
   User,
   Pencil,
+  Shield,
+  Users,
 } from "lucide-react";
 import { api } from "../services/api";
 import { getAvatarUrl } from "../services/imageHelper";
@@ -25,7 +27,8 @@ interface BackendUser {
   kelas?: string;
   jurusan?: string;
   bio?: string;
-  role: string;
+  role: string;        // "admin" | "member" (backend only)
+  jabatan?: string;    // "Ketua Kelas" | "Wakil Ketua" | "Sekretaris" | dll
   avatar?: string;
   gender?: string;
   bgColor?: string;
@@ -34,10 +37,10 @@ interface BackendUser {
 
 // ─── Props ─────────────────────────────────────────────────────────
 interface ProfileModalProps {
-  user: UserProfile;              // current user dari parent (bisa stale)
+  user: UserProfile;
   isOpen: boolean;
   onClose: () => void;
-  onSave?: (updates: Partial<UserProfile>) => void; // callback opsional ke parent
+  onSave?: (updates: Partial<UserProfile>) => void;
   onToast?: (msg: string, type?: "success" | "error" | "info") => void;
 }
 
@@ -51,7 +54,8 @@ const mapBackendToFrontend = (u: BackendUser): UserProfile => ({
   jurusan: u.jurusan || "Teknik Informatika",
   bio: u.bio || "",
   email: u.email || "",
-  role: u.role,
+  role: u.jabatan || u.role || "Warga Kelas", // Display: jabatan, fallback ke role
+  jabatan: u.jabatan,
   avatar: u.avatar,
   gender: u.gender,
   bgColor: u.bgColor || "#4D96FF",
@@ -71,7 +75,10 @@ export default function ProfileModal({
   const [name, setName] = useState(user.name);
   const [initials, setInitials] = useState(user.initials || "");
   const [bgColor, setBgColor] = useState(user.bgColor || "#4D96FF");
-  const [role, setRole] = useState(user.role);
+  const [role, setRole] = useState<"admin" | "member">(
+    (user.role === "admin" || user.role === "Admin") ? "admin" : "member"
+  );
+  const [jabatan, setJabatan] = useState(user.jabatan || "Warga Kelas");
   const [bio, setBio] = useState(user.bio || "");
   const [gender, setGender] = useState<"male" | "female">(
     (user.gender as "male" | "female") || "male"
@@ -91,8 +98,8 @@ export default function ProfileModal({
   // ── Data dari backend (real-time) ──────────────────────────────
   const [backendUser, setBackendUser] = useState<UserProfile | null>(null);
 
-  // ── Roles ──────────────────────────────────────────────────────
-  const roles = [
+  // ── Jabatan options (display only, stored in jabatan column) ─────
+  const jabatanOptions = [
     "Ketua Kelas",
     "Wakil Ketua",
     "Sekretaris",
@@ -126,7 +133,8 @@ export default function ProfileModal({
       setName(mapped.name);
       setInitials(mapped.initials || "");
       setBgColor(mapped.bgColor || "#4D96FF");
-      setRole(mapped.role);
+      setRole((mapped.role === "admin" || mapped.role === "Admin") ? "admin" : "member");
+      setJabatan(mapped.jabatan || "Warga Kelas");
       setBio(mapped.bio || "");
       setGender((mapped.gender as "male" | "female") || "male");
     } catch (err: any) {
@@ -143,7 +151,7 @@ export default function ProfileModal({
     }
   }, [isOpen, fetchUserData]);
 
-  // ── Auto-generate initials dari nama ────────────────────────────
+  // ── Auto-generate initials dari nama ──────────────────────────
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setName(newName);
@@ -194,8 +202,8 @@ export default function ProfileModal({
     e.preventDefault();
     setError(null);
 
-    if (!name.trim() || !initials.trim() || !role) {
-      setError("Nama, inisial, dan peran wajib diisi");
+    if (!name.trim() || !initials.trim()) {
+      setError("Nama dan inisial wajib diisi");
       return;
     }
 
@@ -220,7 +228,8 @@ export default function ProfileModal({
         name: name.trim(),
         initials: initials.trim().toUpperCase().substring(0, 2),
         bgColor,
-        role,
+        role,              // "admin" | "member"
+        jabatan,           // "Ketua Kelas" | "Wakil Ketua" | dll
         bio: bio.trim(),
         gender,
         ...(avatarPath && { avatar: avatarPath }),
@@ -256,8 +265,7 @@ export default function ProfileModal({
   // ── Determine display values ────────────────────────────────────
   const displayUser = backendUser || user;
   const currentAvatarUrl =
-    avatarPreview ||
-    getAvatarUrl(displayUser.avatar || displayUser.photoUrl, displayUser.gender);
+    avatarPreview || getAvatarUrl(displayUser.avatar, displayUser.gender);
 
   if (!isOpen) return null;
 
@@ -334,28 +342,19 @@ export default function ProfileModal({
                 {/* ── Preview Badge with Avatar Upload ── */}
                 <div className="flex justify-center py-5 bg-slate-50 rounded-2xl border-2 border-slate-200 relative">
                   <div className="flex flex-col items-center">
-                    {/* Avatar Container */}
+                    {/* Avatar Container - SELALU pakai getAvatarUrl */}
                     <div className="relative group">
-                      {avatarPreview || displayUser.avatar || displayUser.photoUrl ? (
-                        <img
-                          src={currentAvatarUrl}
-                          alt="Avatar"
-                          className="w-20 h-20 rounded-full border-3 border-white shadow-lg object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = getAvatarUrl(
-                              undefined,
-                              gender
-                            );
-                          }}
-                        />
-                      ) : (
-                        <div
-                          className="w-20 h-20 rounded-full border-3 border-white flex items-center justify-center font-black text-2xl text-white shadow-lg"
-                          style={{ backgroundColor: bgColor }}
-                        >
-                          {initials || "??"}
-                        </div>
-                      )}
+                      <img
+                        src={currentAvatarUrl}
+                        alt="Avatar"
+                        className="w-20 h-20 rounded-full border-3 border-white shadow-lg object-cover bg-slate-200"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = getAvatarUrl(
+                            undefined,
+                            gender
+                          );
+                        }}
+                      />
 
                       {/* Upload Overlay */}
                       <button
@@ -385,12 +384,12 @@ export default function ProfileModal({
                       Ganti Foto
                     </button>
 
-                    {/* Name & Role */}
+                    {/* Name & Jabatan (bukan role) */}
                     <span className="font-black text-sm text-slate-900 mt-2 leading-none">
                       {name.trim() || "Nama Kamu"}
                     </span>
                     <span className="text-[10px] font-black text-white px-2.5 py-1 rounded-md mt-1.5 bg-slate-900 tracking-wide font-mono uppercase">
-                      {role}
+                      {jabatan}
                     </span>
                   </div>
                 </div>
@@ -429,46 +428,76 @@ export default function ProfileModal({
                   </div>
                 </div>
 
-                {/* ── Initials & Role ── */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wide">
-                      Inisial
-                    </label>
-                    <div className="relative">
-                      <Pencil className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        value={initials}
-                        onChange={(e) =>
-                          setInitials(e.target.value.toUpperCase().substring(0, 2))
-                        }
-                        className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-bold outline-none focus:bg-white focus:border-indigo-500 focus:shadow-[3px_3px_0px_0px_rgba(99,102,241,0.3)] text-slate-800 uppercase transition-all"
-                        placeholder="BS"
-                        maxLength={2}
-                        required
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wide">
-                      Peran
-                    </label>
-                    <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-bold outline-none focus:bg-white focus:border-indigo-500 focus:shadow-[3px_3px_0px_0px_rgba(99,102,241,0.3)] text-slate-800 transition-all appearance-none cursor-pointer"
+                {/* ── Initials ── */}
+                <div>
+                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wide">
+                    Inisial Avatar
+                  </label>
+                  <div className="relative">
+                    <Pencil className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text"
+                      value={initials}
+                      onChange={(e) =>
+                        setInitials(e.target.value.toUpperCase().substring(0, 2))
+                      }
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-bold outline-none focus:bg-white focus:border-indigo-500 focus:shadow-[3px_3px_0px_0px_rgba(99,102,241,0.3)] text-slate-800 uppercase transition-all"
+                      placeholder="BS"
+                      maxLength={2}
+                      required
                       disabled={isLoading}
-                    >
-                      {roles.map((r) => (
-                        <option key={r} value={r}>
-                          {r}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
+                </div>
+
+                {/* ── Role (admin/member) ── */}
+                <div>
+                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wide">
+                    Role Sistem
+                  </label>
+                  <div className="flex gap-2">
+                    {(["admin", "member"] as const).map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setRole(r)}
+                        className={`flex-1 py-2.5 rounded-xl text-xs font-black border-2 transition-all flex items-center justify-center gap-1.5 ${
+                          role === r
+                            ? r === "admin"
+                              ? "bg-amber-500 border-amber-600 text-white shadow-[3px_3px_0px_0px_rgba(217,119,6,0.4)]"
+                              : "bg-indigo-600 border-indigo-700 text-white shadow-[3px_3px_0px_0px_rgba(79,70,229,0.4)]"
+                            : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"
+                        }`}
+                        disabled={isLoading}
+                      >
+                        {r === "admin" ? (
+                          <Shield className="w-3.5 h-3.5" />
+                        ) : (
+                          <Users className="w-3.5 h-3.5" />
+                        )}
+                        {r === "admin" ? "Admin" : "Member"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Jabatan (display only) ── */}
+                <div>
+                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wide">
+                    Jabatan / Peran
+                  </label>
+                  <select
+                    value={jabatan}
+                    onChange={(e) => setJabatan(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-bold outline-none focus:bg-white focus:border-indigo-500 focus:shadow-[3px_3px_0px_0px_rgba(99,102,241,0.3)] text-slate-800 transition-all appearance-none cursor-pointer"
+                    disabled={isLoading}
+                  >
+                    {jabatanOptions.map((j) => (
+                      <option key={j} value={j}>
+                        {j}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* ── Bio ── */}
