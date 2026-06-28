@@ -14,20 +14,44 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 // Fetch dengan error handling
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  try {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      ...options,
-    });
-    return handleResponse<T>(response);
-  } catch (error) {
-    console.error(`API Error [${endpoint}]:`, error);
-    throw error;
+  const url = `${API_BASE}${endpoint}`;
+  
+  const config: RequestInit = {
+    method: options?.method || 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+  };
+
+  // Hanya tambahin body kalo ada dan method bukan GET
+  if (options?.body && config.method !== 'GET') {
+    config.body = options.body;
   }
+
+  console.log("FETCH CONFIG:", { url, ...config, body: config.body ? JSON.parse(config.body as string) : undefined });
+
+  const response = await fetch(url, config);
+  
+  const data = await response.json().catch(() => ({ error: 'Unknown error' }));
+  
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `HTTP ${response.status}`);
+  }
+  
+  return data;
 }
+
+// Auth
+login: (username: string, password: string) => {
+  const payload = JSON.stringify({ username, password });
+  console.log("LOGIN PAYLOAD:", payload);
+  
+  return fetchAPI<{ token: string; user: any }>('/auth/login', {
+    method: 'POST',
+    body: payload,
+  });
+},
 
 // Auth helper - ambil token dari localStorage
 const getAuthHeaders = () => {
