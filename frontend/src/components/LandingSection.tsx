@@ -1,36 +1,250 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { ClassPhotoMemory, DosenAssignment, ChatRoom } from "../types";
-import { Image as ImageIcon, Calendar, MessageSquare, Users, ArrowRight, Sparkles } from "lucide-react";
+import { Image as ImageIcon, Calendar, MessageSquare, Users, ArrowRight, Sparkles, Loader2 } from "lucide-react";
+import { api } from "../services/api";
+
+// Types (bisa di-import dari file terpisah)
+interface ClassPhotoMemory {
+  id: number;
+  imageUrl: string;
+  caption: string;
+  date: string;
+  authorName?: string;
+  likesCount?: number;
+  commentsCount?: number;
+}
+
+interface DosenAssignment {
+  id: number;
+  title: string;
+  course: string;
+  dosen: string;
+  deadline: string;
+  description?: string;
+  priority?: string;
+}
+
+interface ChatRoom {
+  id: number;
+  name: string;
+  description?: string;
+  messageCount?: number;
+}
 
 interface LandingSectionProps {
-  memories: ClassPhotoMemory[];
-  assignments: DosenAssignment[];
-  rooms: ChatRoom[];
-  userCount: number;
   onNavigateToTab: (tab: string) => void;
   onOpenLogin: () => void;
   isLoggedIn: boolean;
 }
 
+// Mock data fallback
+const MOCK_MEMORIES: ClassPhotoMemory[] = [
+  {
+    id: 1,
+    imageUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+    caption: "Kegiatan bonding kelas semester 1",
+    date: "2025-06-15",
+  },
+  {
+    id: 2,
+    imageUrl: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+    caption: "Presentasi proyek akhir",
+    date: "2025-06-10",
+  },
+  {
+    id: 3,
+    imageUrl: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800",
+    caption: "Study group bareng di perpustakaan",
+    date: "2025-06-05",
+  },
+];
+
+const MOCK_ASSIGNMENTS: DosenAssignment[] = [
+  {
+    id: 1,
+    title: "Proyek Akhir Pemrograman Web",
+    course: "Pemrograman Web",
+    dosen: "Dr. Budi Santoso",
+    deadline: "2025-07-15T23:59:00",
+  },
+  {
+    id: 2,
+    title: "Tugas Besar Basis Data",
+    course: "Basis Data",
+    dosen: "Prof. Siti Aminah",
+    deadline: "2025-07-10T23:59:00",
+  },
+  {
+    id: 3,
+    title: "Presentasi Jaringan Komputer",
+    course: "Jaringan Komputer",
+    dosen: "Dr. Ahmad Wijaya",
+    deadline: "2025-07-05T23:59:00",
+  },
+];
+
+const MOCK_ROOMS: ChatRoom[] = [
+  { id: 1, name: "Umum", description: "Diskusi umum kelas", messageCount: 42 },
+  { id: 2, name: "Tugas", description: "Diskusi tugas dan deadline", messageCount: 15 },
+  { id: 3, name: "Random", description: "Obrolan bebas", messageCount: 28 },
+];
+
 export default function LandingSection({
-  memories,
-  assignments,
-  rooms,
-  userCount,
   onNavigateToTab,
   onOpenLogin,
-  isLoggedIn
+  isLoggedIn,
 }: LandingSectionProps) {
+  // State untuk data dari API
+  const [memories, setMemories] = useState<ClassPhotoMemory[]>([]);
+  const [assignments, setAssignments] = useState<DosenAssignment[]>([]);
+  const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [userCount, setUserCount] = useState<number>(0);
   
-  const recentMemories = memories.slice(0, 3);
-  const upcomingAssignments = assignments
-    .filter(a => new Date(a.deadline) > new Date())
-    .slice(0, 3);
+  // Loading & error states
+  const [loading, setLoading] = useState({
+    memories: true,
+    assignments: true,
+    rooms: true,
+    users: true,
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [useMockData, setUseMockData] = useState(false);
+
+  // Fetch data saat mount
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    // Fetch users count
+    try {
+      const count = await api.getUserCount();
+      setUserCount(count);
+      setLoading(prev => ({ ...prev, users: false }));
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+      setErrors(prev => ({ ...prev, users: "Gagal memuat data user" }));
+      setUserCount(MOCK_MEMORIES.length); // fallback
+      setLoading(prev => ({ ...prev, users: false }));
+    }
+
+    // Fetch posts (memories)
+    try {
+      const posts = await api.getPosts();
+      const mappedMemories: ClassPhotoMemory[] = posts.slice(0, 3).map((post: any) => ({
+        id: post.id,
+        imageUrl: post.image_url || "https://via.placeholder.com/400x300",
+        caption: post.title || post.description || "Untitled",
+        date: new Date(post.created_at).toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }),
+        authorName: post.author_name,
+        authorAvatar: post.author_avatar,
+        likesCount: parseInt(post.likes_count) || 0,
+        commentsCount: parseInt(post.comments_count) || 0,
+      }));
+      setMemories(mappedMemories);
+      setLoading(prev => ({ ...prev, memories: false }));
+    } catch (err) {
+      console.error("Failed to fetch posts:", err);
+      setErrors(prev => ({ ...prev, memories: "Gagal memuat kenangan" }));
+      setMemories(MOCK_MEMORIES);
+      setLoading(prev => ({ ...prev, memories: false }));
+    }
+
+    // Fetch deadlines (assignments)
+    try {
+      const deadlines = await api.getDeadlines();
+      const mappedAssignments: DosenAssignment[] = deadlines
+        .filter((d: any) => new Date(d.deadline_at) > new Date())
+        .slice(0, 3)
+        .map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          course: d.mata_kuliah || d.course || "Umum",
+          dosen: d.dosen || "Dosen",
+          deadline: d.deadline_at,
+          description: d.description,
+          priority: d.priority,
+        }));
+      setAssignments(mappedAssignments);
+      setLoading(prev => ({ ...prev, assignments: false }));
+    } catch (err) {
+      console.error("Failed to fetch deadlines:", err);
+      setErrors(prev => ({ ...prev, assignments: "Gagal memuat tugas" }));
+      setAssignments(MOCK_ASSIGNMENTS);
+      setLoading(prev => ({ ...prev, assignments: false }));
+    }
+
+    // Fetch chat rooms
+    try {
+      const chatRooms = await api.getChatRooms();
+      const mappedRooms: ChatRoom[] = chatRooms.map((room: any) => ({
+        id: room.id,
+        name: room.name,
+        description: room.description,
+        messageCount: parseInt(room.message_count) || 0,
+      }));
+      setRooms(mappedRooms);
+      setLoading(prev => ({ ...prev, rooms: false }));
+    } catch (err) {
+      console.error("Failed to fetch chat rooms:", err);
+      setErrors(prev => ({ ...prev, rooms: "Gagal memuat chat rooms" }));
+      setRooms(MOCK_ROOMS);
+      setLoading(prev => ({ ...prev, rooms: false }));
+    }
+  };
+
+  // Data untuk render (API atau mock)
+  const recentMemories = memories.length > 0 ? memories : MOCK_MEMORIES;
+  const upcomingAssignments = assignments.length > 0 
+    ? assignments.filter(a => new Date(a.deadline) > new Date()).slice(0, 3)
+    : MOCK_ASSIGNMENTS.filter(a => new Date(a.deadline) > new Date()).slice(0, 3);
+  const activeRooms = rooms.length > 0 ? rooms : MOCK_ROOMS;
+  const displayUserCount = userCount || MOCK_MEMORIES.length;
+
+  const isLoading = Object.values(loading).some(v => v);
+
+  // Retry handler
+  const handleRetry = () => {
+    setErrors({});
+    setLoading({
+      memories: true,
+      assignments: true,
+      rooms: true,
+      users: true,
+    });
+    fetchAllData();
+  };
 
   return (
     <div className="space-y-8 pt-6">
       
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-8 h-8 text-[#FF007F] animate-spin" />
+          <span className="ml-3 text-sm font-bold text-slate-600">Memuat data...</span>
+        </div>
+      )}
+
+      {/* Error Banner */}
+      {Object.keys(errors).length > 0 && !isLoading && (
+        <div className="bg-[#ffb7b2] border-2 border-black rounded-xl p-4 shadow-[3px_3px_0px_0px_#000]">
+          <p className="text-xs font-bold text-slate-900 mb-2">
+            ⚠️ Beberapa data gagal dimuat. Menampilkan data demo.
+          </p>
+          <button
+            onClick={handleRetry}
+            className="text-[11px] font-black text-[#FF007F] underline hover:no-underline"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative bg-white border-3 border-black rounded-3xl p-8 shadow-[6px_6px_0px_0px_#000] overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF007F]/10 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -81,10 +295,10 @@ export default function LandingSection({
       {/* Stats Grid */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Warga Kelas", value: userCount, icon: Users, color: "bg-[#b5e2fa]" },
-          { label: "Foto Kenangan", value: memories.length, icon: ImageIcon, color: "bg-[#e2bbfd]" },
-          { label: "Room Chat", value: rooms.length, icon: MessageSquare, color: "bg-[#98f5e1]" },
-          { label: "Tugas Aktif", value: assignments.length, icon: Calendar, color: "bg-[#ffb7b2]" },
+          { label: "Warga Kelas", value: displayUserCount, icon: Users, color: "bg-[#b5e2fa]" },
+          { label: "Foto Kenangan", value: recentMemories.length, icon: ImageIcon, color: "bg-[#e2bbfd]" },
+          { label: "Room Chat", value: activeRooms.length, icon: MessageSquare, color: "bg-[#98f5e1]" },
+          { label: "Tugas Aktif", value: upcomingAssignments.length, icon: Calendar, color: "bg-[#ffb7b2]" },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -132,11 +346,19 @@ export default function LandingSection({
                     alt={memory.caption}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x300?text=No+Image";
+                    }}
                   />
                 </div>
                 <div className="p-3">
                   <p className="text-[11px] font-black text-slate-900 truncate">{memory.caption}</p>
                   <p className="text-[9px] font-bold text-slate-500 mt-1">{memory.date}</p>
+                  {memory.authorName && (
+                    <p className="text-[9px] font-bold text-[#FF007F] mt-1">
+                      by {memory.authorName}
+                    </p>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -176,13 +398,25 @@ export default function LandingSection({
                   </div>
                   <div>
                     <p className="text-xs font-black text-slate-900">{assignment.title}</p>
-                    <p className="text-[10px] font-bold text-slate-500">{assignment.course} • {assignment.dosen}</p>
+                    <p className="text-[10px] font-bold text-slate-500">
+                      {assignment.course} • {assignment.dosen}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-black text-[#FF007F] bg-[#FFF5B7] px-2 py-1 border border-black rounded-lg">
-                    {new Date(assignment.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                    {new Date(assignment.deadline).toLocaleDateString('id-ID', { 
+                      day: 'numeric', 
+                      month: 'short' 
+                    })}
                   </p>
+                  {assignment.priority && (
+                    <p className={`text-[8px] font-bold mt-1 px-1.5 py-0.5 rounded border border-black inline-block
+                      ${assignment.priority === 'high' ? 'bg-[#ffb7b2]' : 
+                        assignment.priority === 'medium' ? 'bg-[#FFF5B7]' : 'bg-[#98f5e1]'}`}>
+                      {assignment.priority}
+                    </p>
+                  )}
                 </div>
               </motion.div>
             ))}
