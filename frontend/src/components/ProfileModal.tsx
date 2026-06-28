@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { UserProfile } from "../types";
-import { motion } from "motion/react";
-import { X, Check, Award, ShieldAlert, Sparkles, CheckCircle } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { X, Check, Sparkles } from "lucide-react";
 
 interface ProfileModalProps {
   user: UserProfile;
@@ -20,8 +20,6 @@ export default function ProfileModal({
   const [initials, setInitials] = useState(user.initials);
   const [bgColor, setBgColor] = useState(user.bgColor);
   const [role, setRole] = useState(user.role);
-
-  if (!isOpen) return null;
 
   const colors = [
     { value: "#6BCB77", label: "Hijau" },
@@ -55,147 +53,170 @@ export default function ProfileModal({
     }
   };
 
+  // Auto-generate initials dari nama
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setName(newName);
+    
+    const parts = newName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2 && parts[0] && parts[1]) {
+      setInitials((parts[0][0] + parts[1][0]).toUpperCase());
+    } else if (parts[0]) {
+      setInitials(parts[0].substring(0, 2).toUpperCase());
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-left">
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-3xl border border-slate-200/80 shadow-premium max-w-md w-full overflow-hidden"
-      >
-        <div className="bg-gradient-to-tr from-rose-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
-          <h3 className="text-sm font-bold font-display flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4" />
-            Profil Warga Kelas
-          </h3>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-white/10 rounded-lg text-white"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-left"
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.3, bounce: 0.1 }}
+            className="bg-white rounded-3xl border border-slate-200/80 shadow-2xl max-w-md w-full overflow-hidden"
           >
-            <X className="w-4.5 h-4.5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
-          {/* Preview Badge */}
-          <div className="flex justify-center py-4 bg-slate-50 rounded-2xl border border-slate-200/60">
-            <div className="flex flex-col items-center">
-              <div
-                className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center font-bold text-2xl text-white shadow-md"
-                style={{ backgroundColor: bgColor }}
+            {/* Header */}
+            <div className="bg-gradient-to-tr from-rose-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
+              <h3 className="text-sm font-bold flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4" />
+                Profil Warga Kelas
+              </h3>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                aria-label="Tutup"
               >
-                {initials || "??"}
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              
+              {/* Preview Badge */}
+              <div className="flex justify-center py-4 bg-slate-50 rounded-2xl border border-slate-200/60">
+                <div className="flex flex-col items-center">
+                  <div
+                    className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center font-bold text-2xl text-white shadow-md transition-colors duration-200"
+                    style={{ backgroundColor: bgColor }}
+                  >
+                    {initials || "??"}
+                  </div>
+                  <span className="font-extrabold text-sm text-slate-800 mt-2.5 leading-none">
+                    {name.trim() || "Nama Kamu"}
+                  </span>
+                  <span className="text-[9.5px] font-extrabold text-white px-2 py-0.5 rounded mt-1.5 bg-slate-900 tracking-wide font-mono">
+                    {role}
+                  </span>
+                </div>
               </div>
-              <span className="font-extrabold text-sm text-slate-800 mt-2.5 leading-none">
-                {name || "Nama Kamu"}
-              </span>
-              <span className="text-[9.5px] font-extrabold text-white px-2 py-0.5 rounded mt-1.5 bg-slate-900 tracking-wide font-mono">
-                {role}
-              </span>
-            </div>
-          </div>
 
-          {/* Name input */}
-          <div>
-            <label className="block text-xs font-bold text-slate-600 mb-1.5">
-              Nama Lengkap
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                const parts = e.target.value.trim().split(" ");
-                if (parts.length >= 2) {
-                  setInitials((parts[0][0] + parts[1][0]).toUpperCase());
-                } else if (parts[0]) {
-                  setInitials(parts[0].substring(0, 2).toUpperCase());
-                }
-              }}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:bg-white text-slate-800"
-              placeholder="e.g. Budi Santoso"
-              required
-            />
-          </div>
+              {/* Name input */}
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">
+                  Nama Lengkap
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={handleNameChange}
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-slate-800 transition-all"
+                  placeholder="e.g. Budi Santoso"
+                  required
+                />
+              </div>
 
-          {/* Initials & Role block */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1.5">
-                Inisial Avatar
-              </label>
-              <input
-                type="text"
-                value={initials}
-                onChange={(e) => setInitials(e.target.value.toUpperCase().substring(0, 2))}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:bg-white text-slate-800 uppercase"
-                placeholder="BS"
-                maxLength={2}
-                required
-              />
-            </div>
+              {/* Initials & Role block */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5">
+                    Inisial Avatar
+                  </label>
+                  <input
+                    type="text"
+                    value={initials}
+                    onChange={(e) => setInitials(e.target.value.toUpperCase().substring(0, 2))}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-slate-800 uppercase transition-all"
+                    placeholder="BS"
+                    maxLength={2}
+                    required
+                  />
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1.5">
-                Jabatan / Peran
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:bg-white text-slate-800"
-              >
-                {roles.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5">
+                    Jabatan / Peran
+                  </label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-slate-800 transition-all appearance-none cursor-pointer"
+                  >
+                    {roles.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-          {/* Avatar theme color */}
-          <div>
-            <label className="block text-xs font-bold text-slate-600 mb-2">
-              Warna Tema Avatar
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {colors.map((color) => (
+              {/* Avatar theme color */}
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-2">
+                  Warna Tema Avatar
+                </label>
+                <div className="flex flex-wrap gap-2.5">
+                  {colors.map((color) => (
+                    <button
+                      key={color.value}
+                      type="button"
+                      onClick={() => setBgColor(color.value)}
+                      className={`w-8 h-8 rounded-full cursor-pointer relative transition-all duration-200 hover:scale-110 ${
+                        bgColor === color.value 
+                          ? "scale-110 ring-2 ring-indigo-500 ring-offset-2" 
+                          : "hover:ring-2 hover:ring-slate-300 hover:ring-offset-1"
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      aria-label={`Pilih warna ${color.label}`}
+                      title={color.label}
+                    >
+                      {bgColor === color.value && (
+                        <Check className="w-3.5 h-3.5 text-white absolute inset-0 m-auto stroke-[3]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="flex gap-2.5 pt-4 border-t border-slate-100">
                 <button
-                  key={color.value}
                   type="button"
-                  onClick={() => setBgColor(color.value)}
-                  className={`w-7 h-7 rounded-full cursor-pointer relative transition-all ${
-                    bgColor === color.value ? "scale-110 ring-2 ring-indigo-500 ring-offset-2" : ""
-                  }`}
-                  style={{ backgroundColor: color.value }}
+                  onClick={onClose}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-600 font-bold py-2.5 rounded-xl text-xs transition-all"
                 >
-                  {bgColor === color.value && (
-                    <Check className="w-3.5 h-3.5 text-white absolute inset-0 m-auto font-black" />
-                  )}
+                  Kembali
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex gap-2.5 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2 rounded-xl text-xs cursor-pointer transition-all"
-            >
-              Kembali
-            </button>
-            <button
-              type="submit"
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-xs shadow-md transition-all cursor-pointer"
-            >
-              Simpan Profil ✨
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
+                <button
+                  type="submit"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-2.5 rounded-xl text-xs shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-1"
+                >
+                  <span>Simpan Profil</span>
+                  <Sparkles className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
