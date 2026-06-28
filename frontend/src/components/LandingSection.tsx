@@ -1,456 +1,310 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { Image as ImageIcon, Calendar, MessageSquare, Users, ArrowRight, Sparkles, Loader2 } from "lucide-react";
-import { api } from "../services/api";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { UserProfile, ClassNotification } from "../types";
+import { motion, AnimatePresence } from "motion/react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { 
+  Calendar, 
+  MessageSquare, 
+  Image as ImageIcon, 
+  Bell, 
+  ShieldCheck, 
+  LogOut, 
+  Home, 
+  Menu, 
+  X,
+  GraduationCap,
+  User
+} from "lucide-react";
 
-// Types
-interface ClassPhotoMemory {
-  id: number;
-  imageUrl: string;
-  caption: string;
-  date: string;
-  authorName?: string;
-  likesCount?: number;
-  commentsCount?: number;
-}
-
-interface DosenAssignment {
-  id: number;
-  title: string;
-  course: string;
-  dosen: string;
-  deadline: string;
-  description?: string;
-  priority?: string;
-}
-
-interface ChatRoom {
-  id: number;
-  name: string;
-  description?: string;
-  messageCount?: number;
-}
-
-interface LandingSectionProps {
-  onNavigateToTab: (tab: string) => void;
-  onOpenLogin: () => void;
+interface HeaderProps {
+  user: UserProfile;
   isLoggedIn: boolean;
+  onOpenProfile: () => void;
+  onLogout: () => void;
+  notifications: ClassNotification[];
+  onClearNotification: (id: string) => void;
+  onOpenLogin: () => void;
 }
 
-// Helper untuk resolve image path
-const getImageUrl = (path: string | null | undefined): string => {
-  if (!path) return '/images/default-1.png';
-  if (path.startsWith('http')) return path;
-  if (path.startsWith('/images/')) return path;
-  return `/images/${path}`;  // ← tambahin /images/ prefix
+// ✅ FIX: Avatar helper yang robust
+const getAvatarUrl = (avatar: string | undefined, gender?: string): string => {
+  if (!avatar || avatar === 'default-avatar.png') {
+    return gender === 'female' ? '/images/users/default-2.png' : '/images/users/default-1.png';
+  }
+  if (avatar.startsWith('http')) return avatar;
+  if (avatar.startsWith('/images/')) return avatar;
+  if (avatar.startsWith('/')) return avatar;
+  return `/images/users/${avatar}`;
 };
 
-// Mock data fallback
-const MOCK_MEMORIES: ClassPhotoMemory[] = [
-  {
-    id: 1,
-    imageUrl: "bootcamp-1.jpeg",
-    caption: "Kegiatan bonding kelas semester 1",
-    date: "15 Juni 2025",
-  },
-  {
-    id: 2,
-    imageUrl: "bootcamp-2.jpeg",
-    caption: "Presentasi proyek akhir",
-    date: "10 Juni 2025",
-  },
-  {
-    id: 3,
-    imageUrl: "bootcamp-3.jpeg",
-    caption: "Study group bareng di perpustakaan",
-    date: "5 Juni 2025",
-  },
-];
-
-const MOCK_ASSIGNMENTS: DosenAssignment[] = [
-  {
-    id: 1,
-    title: "Proyek Akhir Pemrograman Web",
-    course: "Pemrograman Web",
-    dosen: "Dr. Budi Santoso",
-    deadline: "2025-07-15T23:59:00",
-  },
-  {
-    id: 2,
-    title: "Tugas Besar Basis Data",
-    course: "Basis Data",
-    dosen: "Prof. Siti Aminah",
-    deadline: "2025-07-10T23:59:00",
-  },
-  {
-    id: 3,
-    title: "Presentasi Jaringan Komputer",
-    course: "Jaringan Komputer",
-    dosen: "Dr. Ahmad Wijaya",
-    deadline: "2025-07-05T23:59:00",
-  },
-];
-
-const MOCK_ROOMS: ChatRoom[] = [
-  { id: 1, name: "Umum", description: "Diskusi umum kelas", messageCount: 42 },
-  { id: 2, name: "Tugas", description: "Diskusi tugas dan deadline", messageCount: 15 },
-  { id: 3, name: "Random", description: "Obrolan bebas", messageCount: 28 },
-];
-
-export default function LandingSection({
-  onNavigateToTab,
-  onOpenLogin,
+export default function Header({
+  user,
   isLoggedIn,
-}: LandingSectionProps) {
-  // State untuk data dari API
-  const [memories, setMemories] = useState<ClassPhotoMemory[]>([]);
-  const [assignments, setAssignments] = useState<DosenAssignment[]>([]);
-  const [rooms, setRooms] = useState<ChatRoom[]>([]);
-  const [userCount, setUserCount] = useState<number>(0);
-  
-  // Loading & error states
-  const [loading, setLoading] = useState({
-    memories: true,
-    assignments: true,
-    rooms: true,
-    users: true,
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  onOpenProfile,
+  onLogout,
+  notifications,
+  onClearNotification,
+  onOpenLogin
+}: HeaderProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const mobileRef = useRef<HTMLDivElement>(null);
 
-  // Fetch data saat mount
+  const isAdmin = useMemo(() => {
+    if (!isLoggedIn || !user?.role) return false;
+    const role = user.role.toLowerCase().trim();
+    return role === "admin" || role === "administrator";
+  }, [isLoggedIn, user?.role]);
+
+  const tabs = [
+    { id: "landing", path: "/", label: "Beranda", icon: Home, guestOk: true },
+    { id: "memories", path: "/kelas", label: "Galeri Foto", icon: ImageIcon, guestOk: true },
+    { id: "chatroom", path: "/chat", label: "Room Chat", icon: MessageSquare, guestOk: false },
+    { id: "assignments", path: "/tugas", label: "Deadline Tugas", icon: Calendar, guestOk: true },
+  ];
+
+  if (isLoggedIn && isAdmin) {
+    tabs.push({ 
+      id: "admin", 
+      path: "/admin", 
+      label: "Admin Panel", 
+      icon: ShieldCheck, 
+      guestOk: false 
+    });
+  }
+
+  const currentPath = location.pathname;
+
   useEffect(() => {
-    fetchAllData();
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifDropdown(false);
+      }
+      if (mobileRef.current && !mobileRef.current.contains(e.target as Node)) {
+        setShowMobileMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchAllData = async () => {
-    // Fetch users count
-    try {
-      const count = await api.getUserCount();
-      setUserCount(count);
-      setLoading(prev => ({ ...prev, users: false }));
-    } catch (err) {
-      console.error("Failed to fetch users:", err);
-      setErrors(prev => ({ ...prev, users: "Gagal memuat data user" }));
-      setUserCount(0);
-      setLoading(prev => ({ ...prev, users: false }));
+  const handleTabClick = (path: string, guestOk: boolean) => {
+    if (!isLoggedIn && !guestOk) {
+      onOpenLogin();
+      return;
     }
-
-    // Fetch posts (memories)
-    try {
-      const posts = await api.getPosts();
-      const mappedMemories: ClassPhotoMemory[] = posts.slice(0, 3).map((post: any) => ({
-        id: post.id,
-        imageUrl: getImageUrl(post.image_url),
-        caption: post.title || post.description || "Untitled",
-        date: new Date(post.created_at).toLocaleDateString('id-ID', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        }),
-        authorName: post.author_name,
-        likesCount: parseInt(post.likes_count) || 0,
-        commentsCount: parseInt(post.comments_count) || 0,
-      }));
-      setMemories(mappedMemories);
-      setLoading(prev => ({ ...prev, memories: false }));
-    } catch (err) {
-      console.error("Failed to fetch posts:", err);
-      setErrors(prev => ({ ...prev, memories: "Gagal memuat kenangan" }));
-      setMemories(MOCK_MEMORIES);
-      setLoading(prev => ({ ...prev, memories: false }));
-    }
-
-    // Fetch deadlines (assignments)
-    try {
-      const deadlines = await api.getDeadlines();
-      const mappedAssignments: DosenAssignment[] = deadlines
-        .filter((d: any) => new Date(d.deadline_at) > new Date())
-        .slice(0, 3)
-        .map((d: any) => ({
-          id: d.id,
-          title: d.title,
-          course: d.mata_kuliah || d.course || "Umum",
-          dosen: d.dosen || "Dosen",
-          deadline: d.deadline_at,
-          description: d.description,
-          priority: d.priority,
-        }));
-      setAssignments(mappedAssignments);
-      setLoading(prev => ({ ...prev, assignments: false }));
-    } catch (err) {
-      console.error("Failed to fetch deadlines:", err);
-      setErrors(prev => ({ ...prev, assignments: "Gagal memuat tugas" }));
-      setAssignments(MOCK_ASSIGNMENTS);
-      setLoading(prev => ({ ...prev, assignments: false }));
-    }
-
-    // Fetch chat rooms
-    try {
-      const chatRooms = await api.getChatRooms();
-      const mappedRooms: ChatRoom[] = chatRooms.map((room: any) => ({
-        id: room.id,
-        name: room.name,
-        description: room.description,
-        messageCount: parseInt(room.message_count) || 0,
-      }));
-      setRooms(mappedRooms);
-      setLoading(prev => ({ ...prev, rooms: false }));
-    } catch (err) {
-      console.error("Failed to fetch chat rooms:", err);
-      setErrors(prev => ({ ...prev, rooms: "Gagal memuat chat rooms" }));
-      setRooms(MOCK_ROOMS);
-      setLoading(prev => ({ ...prev, rooms: false }));
-    }
+    navigate(path);
+    setShowMobileMenu(false);
   };
 
-  // Data untuk render (API atau mock)
-  const recentMemories = memories.length > 0 ? memories : MOCK_MEMORIES;
-  const upcomingAssignments = assignments.length > 0 
-    ? assignments.filter(a => new Date(a.deadline) > new Date()).slice(0, 3)
-    : MOCK_ASSIGNMENTS.filter(a => new Date(a.deadline) > new Date()).slice(0, 3);
-  const activeRooms = rooms.length > 0 ? rooms : MOCK_ROOMS;
-  const displayUserCount = userCount || activeRooms.length;
-
-  const isLoading = Object.values(loading).some(v => v);
-
-  // Retry handler
-  const handleRetry = () => {
-    setErrors({});
-    setLoading({
-      memories: true,
-      assignments: true,
-      rooms: true,
-      users: true,
-    });
-    fetchAllData();
-  };
+  const unreadNotifsCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="space-y-8 pt-6">
-      
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-8 h-8 text-[#FF007F] animate-spin" />
-          <span className="ml-3 text-sm font-bold text-slate-600">Memuat data...</span>
-        </div>
-      )}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFF5B7] border-b-3 border-black shadow-[0px_4px_0px_0px_#000]">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-3">
+        <div className="flex items-center justify-between gap-4">
 
-      {/* Error Banner */}
-      {Object.keys(errors).length > 0 && !isLoading && (
-        <div className="bg-[#ffb7b2] border-2 border-black rounded-xl p-4 shadow-[3px_3px_0px_0px_#000]">
-          <p className="text-xs font-bold text-slate-900 mb-2">
-            ⚠️ Beberapa data gagal dimuat. Menampilkan data demo.
-          </p>
-          <button
-            onClick={handleRetry}
-            className="text-[11px] font-black text-[#FF007F] underline hover:no-underline"
-          >
-            Coba Lagi
-          </button>
-        </div>
-      )}
-
-      {/* Hero Section */}
-      <section className="relative bg-white border-3 border-black rounded-3xl p-8 shadow-[6px_6px_0px_0px_#000] overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF007F]/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#b5e2fa]/40 rounded-full translate-y-1/2 -translate-x-1/2" />
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="px-2 py-1 bg-[#FF007F] text-white text-[10px] font-black border border-black rounded-lg">
-              15.5A.02
-            </span>
-            <span className="px-2 py-1 bg-[#98f5e1] text-slate-900 text-[10px] font-black border border-black rounded-lg">
-              Teknik Informatika
-            </span>
+          {/* Brand Logo */}
+          <div className="flex items-center gap-2.5 cursor-pointer select-none shrink-0" onClick={() => navigate("/")}>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#FF6B6B] border-2 border-black rounded-xl flex items-center justify-center text-white shadow-[2px_2px_0px_0px_#000]">
+              <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div className="text-left leading-none hidden sm:block">
+              <h1 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-1">
+                Informatiquee<span className="text-[#FF007F] bg-white px-1 border border-black rounded">Class</span>
+              </h1>
+              <p className="text-[9px] text-slate-700 font-extrabold uppercase tracking-wider font-sans mt-0.5">
+                Kelas Digital
+              </p>
+            </div>
           </div>
-          
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 mb-3 leading-tight">
-            Selamat Datang di <br/>
-            <span className="text-[#FF007F]">Informatiquee</span>Class! 🎓
-          </h1>
-          
-          <p className="text-sm text-slate-600 font-bold max-w-lg mb-6 leading-relaxed">
-            Portal kelas digital untuk mahasiswa Teknik Informatika. 
-            Kelola tugas, berbagi kenangan, dan diskusi bareng teman kelas!
-          </p>
-          
-          <div className="flex flex-wrap gap-3">
-            <button 
-              onClick={() => onNavigateToTab("memories")}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#FF007F] text-white text-xs font-black border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
-            >
-              <Sparkles className="w-4 h-4" />
-              Jelajahi Galeri
-            </button>
-            
-            {!isLoggedIn && (
-              <button 
+
+          {/* Desktop Tabs Navigation */}
+          <nav className="hidden md:flex items-center gap-1 bg-white p-1 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+            {tabs.map((tab) => {
+              const isActive = currentPath === tab.path;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.path, tab.guestOk)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black cursor-pointer transition-all border ${
+                    isActive
+                      ? "bg-[#FF007F] text-white border-black shadow-[2px_2px_0px_0px_#000] -translate-y-0.5"
+                      : "text-slate-800 border-transparent hover:bg-[#b5e2fa]/40 hover:border-black"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Action Widgets Area */}
+          <div className="flex items-center gap-2">
+
+            {/* Notifications Center */}
+            {isLoggedIn && (
+              <div className="relative" ref={notifRef}>
+                <button
+                  onClick={() => setShowNotifDropdown(!showNotifDropdown)}
+                  className="p-2 bg-white hover:bg-[#b5e2fa] text-black rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer relative active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_#000]"
+                  aria-label="Notifikasi"
+                  title="Notifikasi"
+                >
+                  <Bell className="w-4 h-4" />
+                  {unreadNotifsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF007F] border border-black rounded-full flex items-center justify-center text-[8px] text-white font-black animate-bounce">
+                      {unreadNotifsCount > 9 ? '9+' : unreadNotifsCount}
+                    </span>
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {showNotifDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-3 w-72 sm:w-80 bg-white rounded-2xl border-3 border-black shadow-[4px_4px_0px_0px_#000] overflow-hidden z-50 text-left"
+                    >
+                      <div className="p-3 bg-[#e2bbfd] border-b-2 border-black flex justify-between items-center text-xs font-black text-slate-900">
+                        <span>Notifikasi Kelas ({unreadNotifsCount})</span>
+                        {unreadNotifsCount > 0 && (
+                          <span className="text-[10px] bg-white border border-black px-1.5 py-0.5 rounded">Terbaru</span>
+                        )}
+                      </div>
+
+                      <div className="max-h-64 overflow-y-auto divide-y-2 divide-black">
+                        {notifications.length === 0 ? (
+                          <p className="p-4 text-center text-[10.5px] font-bold text-slate-500">
+                            Tidak ada notifikasi baru.
+                          </p>
+                        ) : (
+                          notifications.map(n => (
+                            <div key={n.id} className="p-3 hover:bg-slate-50/50 flex items-start justify-between gap-3 text-[11px]">
+                              <div className="space-y-0.5 min-w-0">
+                                <p className="font-black text-slate-900 truncate">{n.title}</p>
+                                <p className="text-slate-700 font-bold leading-snug">{n.message}</p>
+                                <span className="text-[9px] font-black text-indigo-600 font-mono block pt-1">
+                                  {new Date(n.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => onClearNotification(n.id)}
+                                className="text-slate-800 hover:text-black font-black text-lg leading-none shrink-0"
+                                aria-label="Hapus notifikasi"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* User Auth */}
+            {isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onOpenProfile}
+                  className="flex items-center gap-2 p-1 bg-white hover:bg-[#98f5e1] border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_#000]"
+                  aria-label="Profil"
+                >
+                  <div 
+                    className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center font-black text-[10.5px] text-white shrink-0 border border-black"
+                    style={{ backgroundColor: user.bgColor || '#FF6B6B' }}
+                  >
+                    {user.photoUrl ? (
+                      <img 
+                        src={getAvatarUrl(user.photoUrl, user.gender)} 
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      user.initials || <User className="w-4 h-4" />
+                    )}
+                  </div>
+                  <span className="hidden sm:inline-block text-[11px] font-black text-slate-900 pr-1 truncate max-w-[100px]">
+                    {user?.name?.split(" ")[0] || "User"}
+                  </span>
+                </button>
+
+                <button
+                  onClick={onLogout}
+                  className="p-2 bg-white hover:bg-[#ffb7b2] text-slate-800 hover:text-black rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_#000]"
+                  aria-label="Keluar"
+                  title="Keluar / Logout"
+                >
+                  <LogOut className="w-4 h-4 font-black" />
+                </button>
+              </div>
+            ) : (
+              <button
                 onClick={onOpenLogin}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white text-slate-900 text-xs font-black border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                className="py-1.5 px-3 bg-[#FF007F] hover:bg-[#FF007F]/90 text-white border-2 border-black rounded-xl text-[11px] font-black shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_#000]"
               >
-                <Users className="w-4 h-4" />
                 Login Member
               </button>
             )}
-          </div>
-        </div>
-      </section>
 
-      {/* Stats Grid */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: "Warga Kelas", value: displayUserCount, icon: Users, color: "bg-[#b5e2fa]" },
-          { label: "Foto Kenangan", value: recentMemories.length, icon: ImageIcon, color: "bg-[#e2bbfd]" },
-          { label: "Room Chat", value: activeRooms.length, icon: MessageSquare, color: "bg-[#98f5e1]" },
-          { label: "Tugas Aktif", value: upcomingAssignments.length, icon: Calendar, color: "bg-[#ffb7b2]" },
-        ].map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className={`${stat.color} border-2 border-black rounded-2xl p-4 shadow-[3px_3px_0px_0px_#000]`}
-          >
-            <stat.icon className="w-5 h-5 text-slate-900 mb-2" />
-            <p className="text-2xl font-black text-slate-900">{stat.value}</p>
-            <p className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">{stat.label}</p>
-          </motion.div>
-        ))}
-      </section>
-
-      {/* Recent Memories Preview */}
-      {recentMemories.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-[#FF007F]" />
-              Kenangan Terbaru
-            </h2>
-            <button 
-              onClick={() => onNavigateToTab("memories")}
-              className="flex items-center gap-1 text-[11px] font-black text-[#FF007F] hover:underline"
+            {/* Mobile Hamburguer */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="p-2 bg-white hover:bg-slate-100 text-black border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] md:hidden cursor-pointer"
+              aria-label="Menu"
             >
-              Lihat Semua <ArrowRight className="w-3 h-3" />
+              {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {recentMemories.map((memory, i) => (
-              <motion.div
-                key={memory.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white border-2 border-black rounded-2xl overflow-hidden shadow-[3px_3px_0px_0px_#000] cursor-pointer hover:shadow-[4px_4px_0px_0px_#000] hover:-translate-y-0.5 transition-all"
-                onClick={() => onNavigateToTab("memories")}
-              >
-                <div className="aspect-video bg-slate-200 overflow-hidden">
-                  <img 
-                    src={getImageUrl(memory.imageUrl)} 
-                    alt={memory.caption}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/default-1.png';
-                    }}
-                  />
-                </div>
-                <div className="p-3">
-                  <p className="text-[11px] font-black text-slate-900 truncate">{memory.caption}</p>
-                  <p className="text-[9px] font-bold text-slate-500 mt-1">{memory.date}</p>
-                  {memory.authorName && (
-                    <p className="text-[9px] font-bold text-[#FF007F] mt-1">
-                      by {memory.authorName}
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-      )}
 
-      {/* Upcoming Assignments Preview */}
-      {upcomingAssignments.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#FF007F]" />
-              Deadline Mendatang
-            </h2>
-            <button 
-              onClick={() => onNavigateToTab("assignments")}
-              className="flex items-center gap-1 text-[11px] font-black text-[#FF007F] hover:underline"
+          </div>
+        </div>
+
+        {/* Mobile Drawer */}
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.nav
+              ref={mobileRef}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden pt-4 mt-3 border-t-2 border-black flex flex-col gap-1.5 text-left"
             >
-              Lihat Semua <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-          
-          <div className="space-y-2">
-            {upcomingAssignments.map((assignment, i) => (
-              <motion.div
-                key={assignment.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white border-2 border-black rounded-xl p-4 shadow-[3px_3px_0px_0px_#000] flex items-center justify-between hover:shadow-[4px_4px_0px_0px_#000] transition-all cursor-pointer"
-                onClick={() => onNavigateToTab("assignments")}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#FFF5B7] border-2 border-black rounded-lg flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-slate-900" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-black text-slate-900">{assignment.title}</p>
-                    <p className="text-[10px] font-bold text-slate-500">
-                      {assignment.course} • {assignment.dosen}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-black text-[#FF007F] bg-[#FFF5B7] px-2 py-1 border border-black rounded-lg">
-                    {new Date(assignment.deadline).toLocaleDateString('id-ID', { 
-                      day: 'numeric', 
-                      month: 'short' 
-                    })}
-                  </p>
-                  {assignment.priority && (
-                    <p className={`text-[8px] font-bold mt-1 px-1.5 py-0.5 rounded border border-black inline-block
-                      ${assignment.priority === 'high' ? 'bg-[#ffb7b2]' : 
-                        assignment.priority === 'medium' ? 'bg-[#FFF5B7]' : 'bg-[#98f5e1]'}`}>
-                      {assignment.priority}
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Quick Access Cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div 
-          onClick={() => onNavigateToTab("memories")}
-          className="bg-[#e2bbfd] border-2 border-black rounded-2xl p-5 shadow-[3px_3px_0px_0px_#000] cursor-pointer hover:shadow-[4px_4px_0px_0px_#000] hover:-translate-y-0.5 transition-all"
-        >
-          <ImageIcon className="w-8 h-8 text-slate-900 mb-3" />
-          <h3 className="text-sm font-black text-slate-900 mb-1">Galeri Kenangan</h3>
-          <p className="text-[11px] font-bold text-slate-700">Lihat dan bagikan momen seru bareng kelas!</p>
-        </div>
-        
-        <div 
-          onClick={() => onNavigateToTab("assignments")}
-          className="bg-[#b5e2fa] border-2 border-black rounded-2xl p-5 shadow-[3px_3px_0px_0px_#000] cursor-pointer hover:shadow-[4px_4px_0px_0px_#000] hover:-translate-y-0.5 transition-all"
-        >
-          <Calendar className="w-8 h-8 text-slate-900 mb-3" />
-          <h3 className="text-sm font-black text-slate-900 mb-1">Deadline Tugas</h3>
-          <p className="text-[11px] font-bold text-slate-700">Pantau jadwal tugas dan pengumpulan!</p>
-        </div>
-      </section>
-
-    </div>
+              {tabs.map((tab) => {
+                const isActive = currentPath === tab.path;
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabClick(tab.path, tab.guestOk)}
+                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-full text-left border-2 border-black shadow-[2px_2px_0px_0px_#000] ${
+                      isActive
+                        ? "bg-[#FF007F] text-white"
+                        : "bg-white text-slate-800 hover:bg-[#b5e2fa]/25"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </motion.nav>
+          )}
+        </AnimatePresence>
+      </div>
+    </header>
   );
 }
