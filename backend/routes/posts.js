@@ -150,4 +150,16 @@ router.get('/:id/comments', async (req, res) => {
   }
 });
 
+// routes/posts.js - Upload handler
+router.post('/upload', async (req, res) => {
+  // Simpan file ke frontend/images/ di repo
+  // Commit & push ke GitHub
+  // Return URL GitHub raw
+  
+  const fileName = req.body.fileName; // e.g. "upload-1234567890.jpeg"
+  const githubRawUrl = `https://raw.githubusercontent.com/WebCheck17/INFORMATIQUEEV2/main/frontend/images/${fileName}`;
+  
+  res.json({ url: githubRawUrl });
+});
+
 module.exports = router;
