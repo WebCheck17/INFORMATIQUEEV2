@@ -49,19 +49,19 @@ const getImageUrl = (path: string | null | undefined): string => {
 const MOCK_MEMORIES: ClassPhotoMemory[] = [
   {
     id: 1,
-    imageUrl: "bootcamp-7.jpeg",
-    caption: "Bootcamp di Sentul",
-    date: "4 Juni 2026",
+    imageUrl: "bootcamp-1.jpeg",
+    caption: "Kegiatan bonding kelas semester 1",
+    date: "15 Juni 2025",
   },
   {
     id: 2,
-    imageUrl: "memory-2.jpeg",
+    imageUrl: "bootcamp-2.jpeg",
     caption: "Presentasi proyek akhir",
     date: "10 Juni 2025",
   },
   {
     id: 3,
-    imageUrl: "memory-3.jpeg",
+    imageUrl: "bootcamp-3.jpeg",
     caption: "Study group bareng di perpustakaan",
     date: "5 Juni 2025",
   },
