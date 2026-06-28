@@ -3,6 +3,7 @@ import { UserProfile } from "../types";
 import { INITIAL_USERS } from "../data";
 import { motion, AnimatePresence } from "motion/react";
 import { Shield, User, Key, Mail, RefreshCw, LogIn, ArrowRight, GraduationCap } from "lucide-react";
+import { api } from "../services/api"; // ← Import api service
 
 interface AuthProps {
   onLogin: (user: UserProfile) => void;
@@ -12,9 +13,6 @@ interface AuthProps {
   onToast: (msg: string, type: "success" | "info" | "error") => void;
   apiMode?: boolean;
 }
-
-// ✅ FIX: Ambil dari env atau default localhost
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 // Helper avatar lokal
 function getDefaultAvatar(gender: string): string {
@@ -54,19 +52,8 @@ export default function AuthSection({ onLogin, onEnterAsGuest, users, onRegister
 
     if (apiMode) {
       try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          onToast(data.error || "Login gagal!", "error");
-          setIsLoading(false);
-          return;
-        }
+        // ✅ Gunakan api service
+        const data = await api.login(username, password);
 
         localStorage.setItem("kelashub_token", data.token);
 
@@ -75,33 +62,33 @@ export default function AuthSection({ onLogin, onEnterAsGuest, users, onRegister
           username: data.user.username,
           name: data.user.name,
           nim: data.user.nim || "-",
-          kelas: data.user.kelas || "IF-22-A",
+          kelas: data.user.kelas || "15.5A.02",
           jurusan: data.user.jurusan || "Teknik Informatika",
           bio: data.user.bio || "",
           email: data.user.email,
-          role: data.user.role,
-          photoUrl: data.user.photoUrl || getDefaultAvatar(regGender),
+          role: data.user.role_name || data.user.role || "Member",
+          photoUrl: data.user.avatar || getDefaultAvatar(data.user.gender || "male"),
           dateJoined: new Date().toISOString().split("T")[0],
           isActive: true,
           streakDays: 0,
           hasCheckedIn: false,
-          bgColor: data.user.bgColor || "#" + Math.floor(Math.random()*16777215).toString(16),
-          initials: data.user.initials || data.user.name.split(" ").map((n: string) => n[0]).join("").substring(0,2).toUpperCase(),
+          bgColor: "#" + Math.floor(Math.random()*16777215).toString(16),
+          initials: data.user.name?.split(" ").map((n: string) => n[0]).join("").substring(0,2).toUpperCase() || "??",
         };
 
         onLogin(user);
         onToast(`Selamat datang, ${user.name}!`, "success");
 
-      } catch (err) {
+      } catch (err: any) {
         console.error("Login error:", err);
-        onToast("Gagal terhubung ke server!", "error");
+        onToast(err.message || "Gagal terhubung ke server!", "error");
       } finally {
         setIsLoading(false);
       }
       return;
     }
 
-    // Mock mode
+    // Mock mode (tetap sama)
     const foundUser = users.find(
       (u) => u.username.toLowerCase() === username.toLowerCase().trim()
     );
@@ -141,42 +128,31 @@ export default function AuthSection({ onLogin, onEnterAsGuest, users, onRegister
 
     if (apiMode) {
       try {
-        const res = await fetch(`${API_BASE}/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: regName.trim(),
-            username: regUsername.trim(),
-            email: regEmail.trim(),
-            gender: regGender,
-            nim: regNim.trim(),
-            password: regPassword,
-            kelas: regKelas,
-            jurusan: regJurusan,
-          }),
+        // ✅ Gunakan api service
+        await api.register({
+          name: regName.trim(),
+          username: regUsername.trim(),
+          email: regEmail.trim(),
+          gender: regGender,
+          nim: regNim.trim(),
+          password: regPassword,
+          kelas: regKelas,
+          jurusan: regJurusan,
         });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          onToast(data.error || "Pendaftaran gagal!", "error");
-          setIsLoading(false);
-          return;
-        }
 
         onToast("Pendaftaran sukses! Silakan login.", "success");
         setActiveTab("login");
         setUsername(regUsername.trim());
 
-      } catch (err) {
-        onToast("Gagal terhubung ke server!", "error");
+      } catch (err: any) {
+        onToast(err.message || "Gagal terhubung ke server!", "error");
       } finally {
         setIsLoading(false);
       }
       return;
     }
 
-    // Mock mode
+    // Mock mode (tetap sama)
     const exists = users.some(u => u.username.toLowerCase() === regUsername.toLowerCase().trim());
     if (exists) {
       onToast("Username sudah digunakan!", "error");
