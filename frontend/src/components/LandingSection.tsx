@@ -47,26 +47,14 @@ export default function LandingSection({
     fetchAllData();
   }, []);
 
-  const fetchAllData = async () => {
-    // Fetch users count
-    try {
-      const count = await api.getUserCount();
-      setUserCount(count);
-      setLoading(prev => ({ ...prev, users: false }));
-    } catch (err) {
-      console.error("Failed to fetch users:", err);
-      setErrors(prev => ({ ...prev, users: "Gagal memuat data user" }));
-      setUserCount(0);
-      setLoading(prev => ({ ...prev, users: false }));
-    }
-
+const fetchAllData = async () => {
     // Fetch posts (memories)
     try {
       const posts = await api.getPosts();
       const mappedMemories: ClassPhotoMemory[] = posts.slice(0, 3).map((post: any) => ({
         id: post.id,
         title: post.title || post.description || "Untitled",
-        imageUrl: getImageUrl(post.image_url),
+        imageUrl: getImageUrl(post.image_url),  // ← PAKAI HELPER
         date: new Date(post.created_at).toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'long',
@@ -80,12 +68,11 @@ export default function LandingSection({
       setLoading(prev => ({ ...prev, memories: false }));
     } catch (err) {
       console.error("Failed to fetch posts:", err);
-      setErrors(prev => ({ ...prev, memories: "Gagal memuat kenangan" }));
       // Fallback ke mock data
       setMemories(INITIAL_MEMORIES.map(m => ({
         id: m.id,
         title: m.title,
-        imageUrl: getImageUrl(m.imageUrl),
+        imageUrl: getImageUrl(m.imageUrl),  // ← PAKAI HELPER
         date: new Date(m.date).toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'long',
