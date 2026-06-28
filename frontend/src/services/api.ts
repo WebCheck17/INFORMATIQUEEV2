@@ -142,4 +142,31 @@ export const api = {
     }),
 };
 
+  updateUser: (id: string | number, data: any) =>
+    fetchAPI(`/users/${id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
+      body: JSON.stringify(data),
+    }),
+
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    return fetch(`${API_BASE}/users/avatar`, {
+      method: 'POST',
+      headers: { 
+        Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` 
+        // JANGAN set Content-Type, biarkan browser handle boundary
+      },
+      body: formData,
+    }).then(async (response) => {
+      const data = await response.json().catch(() => ({ error: 'Unknown error' }));
+      if (!response.ok) {
+        throw new Error(data.error || data.message || `HTTP ${response.status}`);
+      }
+      return data as { avatarPath: string; avatarUrl: string };
+    });
+  },
+
 export default api;
