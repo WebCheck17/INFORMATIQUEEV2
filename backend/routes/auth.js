@@ -42,6 +42,7 @@ router.post('/login', async (req, res) => {
     );
     
 // routes/auth.js
+// routes/auth.js - Kirim path relatif
 res.json({
   token,
   user: {
@@ -53,9 +54,9 @@ res.json({
     kelas: user.kelas,
     jurusan: user.jurusan,
     bio: user.bio,
-    role: user.role?.toLowerCase() || 'member',  // lowercase!
-    avatar: user.avatar?.startsWith('/') ? user.avatar : `/images/${user.avatar}`,
-    photoUrl: user.avatar?.startsWith('/') ? user.avatar : `/images/${user.avatar}`,
+    role: user.role?.toLowerCase() || 'member',
+    avatar: user.avatar || 'default-1.png',  // ← path relatif
+    photoUrl: user.avatar || 'default-1.png',  // ← path relatif
     gender: user.gender,
     bgColor: user.bg_color || '#' + Math.floor(Math.random()*16777215).toString(16),
     initials: user.initials || user.name?.split(" ").map((n) => n[0]).join("").substring(0,2).toUpperCase(),
