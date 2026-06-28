@@ -1,14 +1,21 @@
 require('dotenv').config();
-const express = require('express');
 
+// ============================================
+// GLOBAL ERROR HANDLERS (catch everything)
+// ============================================
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION:', err);
+});
+
+const express = require('express');
 const app = express();
 
 // ============================================
-// CORS — ULTIMATE CONFIG FOR VERCEL
+// CORS — MUST BE FIRST
 // ============================================
-// Vercel sometimes strips CORS headers from Express middleware.
-// Solution: Set headers manually BEFORE everything else.
-
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const ALLOWED_ORIGINS = [
@@ -18,7 +25,6 @@ app.use((req, res, next) => {
     'http://localhost:4173',
   ];
 
-  // Set CORS headers for ALL responses (including errors)
   if (!origin || ALLOWED_ORIGINS.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin || 'https://informatiquee.vercel.app');
   } else {
@@ -30,11 +36,9 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Max-Age', '86400');
 
-  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
-
   next();
 });
 
@@ -45,9 +49,33 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ============================================
-// HEALTH CHECK
+// REQUEST LOGGING (for debugging)
 // ============================================
-app.get('/api/health', async (req, res) => {
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.headers.origin || 'none'}`);
+  next();
+});
+
+// ============================================
+// HEALTH CHECK (no DB required)
+// ============================================
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    env: {
+      node_env: process.env.NODE_ENV || 'development',
+      has_jwt_secret: !!process.env.JWT_SECRET,
+      has_database_url: !!process.env.DATABASE_URL,
+    }
+  });
+});
+
+// ============================================
+// DB TEST ENDPOINT
+// ============================================
+app.get('/api/db-test', async (req, res) => {
   try {
     const db = require('../db');
     const result = await db.query('SELECT NOW() as now');
@@ -57,6 +85,7 @@ app.get('/api/health', async (req, res) => {
       time: result.rows[0].now 
     });
   } catch (err) {
+    console.error('DB Test Error:', err.message);
     res.status(500).json({ 
       status: 'ERROR', 
       database: err.message 
@@ -65,16 +94,58 @@ app.get('/api/health', async (req, res) => {
 });
 
 // ============================================
-// ROUTES
+// ROUTES (with error handling)
 // ============================================
-app.use('/api/auth', require('../routes/auth'));
-app.use('/api/users', require('../routes/users'));
-app.use('/api/posts', require('../routes/posts'));
-app.use('/api/deadlines', require('../routes/deadlines'));
-app.use('/api/chat', require('../routes/chat'));
-app.use('/api/notifications', require('../routes/notifications'));
-app.use('/api/settings', require('../routes/settings'));
-app.use('/api/activity-logs', require('../routes/activity'));
+try {
+  app.use('/api/auth', require('../routes/auth'));
+} catch (err) {
+  console.error('Failed to load auth routes:', err.message);
+  app.use('/api/auth', (req, res) => res.status(500).json({ error: 'Auth module failed to load' }));
+}
+
+try {
+  app.use('/api/users', require('../routes/users'));
+} catch (err) {
+  console.error('Failed to load users routes:', err.message);
+  app.use('/api/users', (req, res) => res.status(500).json({ error: 'Users module failed to load' }));
+}
+
+try {
+  app.use('/api/posts', require('../routes/posts'));
+} catch (err) {
+  console.error('Failed to load posts routes:', err.message);
+  app.use('/api/posts', (req, res) => res.status(500).json({ error: 'Posts module failed to load' }));
+}
+
+try {
+  app.use('/api/deadlines', require('../routes/deadlines'));
+} catch (err) {
+  console.error('Failed to load deadlines routes:', err.message);
+}
+
+try {
+  app.use('/api/chat', require('../routes/chat'));
+} catch (err) {
+  console.error('Failed to load chat routes:', err.message);
+}
+
+try {
+  app.use('/api/notifications', require('../routes/notifications'));
+} catch (err) {
+  console.error('Failed to load notifications routes:', err.message);
+}
+
+try {
+  app.use('/api/settings', require('../routes/settings'));
+} catch (err) {
+  console.error('Failed to load settings routes:', err.message);
+}
+
+try {
+  app.use('/api/activity-logs', require('../routes/activity'));
+} catch (err) {
+  console.error('Failed to load activity routes:', err.message);
+}
 
 // ============================================
 // 404 HANDLER
@@ -91,7 +162,8 @@ app.use((req, res) => {
 // ERROR HANDLER
 // ============================================
 app.use((err, req, res, next) => {
-  console.error('Express Error:', err);
+  console.error('Express Error:', err.message);
+  console.error(err.stack);
   res.status(500).json({ 
     error: err.message,
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
