@@ -12,13 +12,6 @@ app.use(cors({
   credentials: true
 }));
 
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.sendStatus(200);
-});
-
 app.use(express.json());
 
 // Health check
@@ -40,7 +33,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Routes
-app.use('/api/auth', require('../routes/auth'));
+app.use('/api/auth', require('../routes/auth'));      // ← login, register, me
 app.use('/api/users', require('../routes/users'));
 app.use('/api/posts', require('../routes/posts'));
 app.use('/api/deadlines', require('../routes/deadlines'));
@@ -48,7 +41,6 @@ app.use('/api/chat', require('../routes/chat'));
 app.use('/api/notifications', require('../routes/notifications'));
 app.use('/api/settings', require('../routes/settings'));
 app.use('/api/activity-logs', require('../routes/activity'));
-app.use('/api/auth', require('./routes/register'));
 
 // 404 handler
 app.use((req, res) => {
