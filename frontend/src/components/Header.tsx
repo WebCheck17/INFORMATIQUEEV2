@@ -26,14 +26,15 @@ interface HeaderProps {
   onOpenLogin: () => void;
 }
 
-// Helper untuk resolve avatar path
+// ✅ FIX: Avatar helper yang robust
 const getAvatarUrl = (avatar: string | undefined, gender?: string): string => {
   if (!avatar || avatar === 'default-avatar.png') {
-    return gender === 'female' ? '/images/default-2.png' : '/images/default-1.png';
+    return gender === 'female' ? '/images/users/default-2.png' : '/images/users/default-1.png';
   }
   if (avatar.startsWith('http')) return avatar;
   if (avatar.startsWith('/images/')) return avatar;
-  return `/images/${avatar}`;
+  if (avatar.startsWith('/')) return avatar;
+  return `/images/users/${avatar}`;
 };
 
 export default function Header({
@@ -52,14 +53,12 @@ export default function Header({
   const notifRef = useRef<HTMLDivElement>(null);
   const mobileRef = useRef<HTMLDivElement>(null);
 
-  // ✅ FIX: Admin check dengan useMemo + case-insensitive
   const isAdmin = useMemo(() => {
     if (!isLoggedIn || !user?.role) return false;
     const role = user.role.toLowerCase().trim();
     return role === "admin" || role === "administrator";
   }, [isLoggedIn, user?.role]);
 
-  // Base tabs
   const tabs = [
     { id: "landing", path: "/", label: "Beranda", icon: Home, guestOk: true },
     { id: "memories", path: "/kelas", label: "Galeri Foto", icon: ImageIcon, guestOk: true },
@@ -67,7 +66,6 @@ export default function Header({
     { id: "assignments", path: "/tugas", label: "Deadline Tugas", icon: Calendar, guestOk: true },
   ];
 
-  // ✅ FIX: Admin panel dengan pengecekan robust
   if (isLoggedIn && isAdmin) {
     tabs.push({ 
       id: "admin", 
@@ -80,7 +78,6 @@ export default function Header({
 
   const currentPath = location.pathname;
 
-  // Click outside handler
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
