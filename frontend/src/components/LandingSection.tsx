@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Image as ImageIcon, Calendar, MessageSquare, Users, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { api } from "../services/api";
+import { getImageUrl } from "../services/imageHelper";
 import { INITIAL_MEMORIES, INITIAL_ASSIGNMENTS, INITIAL_ROOMS } from "../data";
 import { ClassPhotoMemory, DosenAssignment, ChatRoom } from "../types";
 
@@ -10,20 +11,6 @@ interface LandingSectionProps {
   onOpenLogin: () => void;
   isLoggedIn: boolean;
 }
-
-// Helper untuk resolve image path
-import { getImageUrl } from "../services/imageHelper";
-
-// Usage
-<img 
-  src={getImageUrl(memory.imageUrl)} 
-  alt={memory.title}
-  className="w-full h-full object-cover"
-  loading="lazy"
-  onError={(e) => {
-    (e.target as HTMLImageElement).src = '/images/default-1.png';
-  }}
-/>
 
 export default function LandingSection({
   onNavigateToTab,
@@ -47,14 +34,26 @@ export default function LandingSection({
     fetchAllData();
   }, []);
 
-const fetchAllData = async () => {
+  const fetchAllData = async () => {
+    // Fetch users count
+    try {
+      const count = await api.getUserCount();
+      setUserCount(count);
+      setLoading(prev => ({ ...prev, users: false }));
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+      setErrors(prev => ({ ...prev, users: "Gagal memuat data user" }));
+      setUserCount(0);
+      setLoading(prev => ({ ...prev, users: false }));
+    }
+
     // Fetch posts (memories)
     try {
       const posts = await api.getPosts();
       const mappedMemories: ClassPhotoMemory[] = posts.slice(0, 3).map((post: any) => ({
         id: post.id,
         title: post.title || post.description || "Untitled",
-        imageUrl: getImageUrl(post.image_url),  // ← PAKAI HELPER
+        imageUrl: getImageUrl(post.image_url),
         date: new Date(post.created_at).toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'long',
@@ -68,11 +67,10 @@ const fetchAllData = async () => {
       setLoading(prev => ({ ...prev, memories: false }));
     } catch (err) {
       console.error("Failed to fetch posts:", err);
-      // Fallback ke mock data
       setMemories(INITIAL_MEMORIES.map(m => ({
         id: m.id,
         title: m.title,
-        imageUrl: getImageUrl(m.imageUrl),  // ← PAKAI HELPER
+        imageUrl: getImageUrl(m.imageUrl),
         date: new Date(m.date).toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'long',
