@@ -41,21 +41,41 @@ export default function AuthSection({ onLogin, onEnterAsGuest, users, onRegister
   // Forgot
   const [forgotEmail, setForgotEmail] = useState("");
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username) {
-      onToast("Username wajib diisi!", "error");
-      return;
-    }
+const handleLoginSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  console.log("DEBUG 1 - username:", username, "password:", password);
+  
+  if (!username) {
+    onToast("Username wajib diisi!", "error");
+    return;
+  }
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    if (apiMode) {
-      try {
-        // ✅ Gunakan api service
-        const data = await api.login(username, password);
+  if (apiMode) {
+    try {
+      // DEBUG: Coba fetch manual dulu
+      console.log("DEBUG 2 - apiMode true, fetching...");
+      
+      const res = await fetch("https://informatiquee-backend.vercel.app/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      
+      console.log("DEBUG 3 - Response status:", res.status);
+      
+      const data = await res.json();
+      console.log("DEBUG 4 - Response data:", data);
 
-        localStorage.setItem("kelashub_token", data.token);
+      if (!res.ok) {
+        onToast(data.error || "Login gagal!", "error");
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.setItem("kelashub_token", data.token);
 
         const user: UserProfile = {
           id: data.user.id.toString(),
