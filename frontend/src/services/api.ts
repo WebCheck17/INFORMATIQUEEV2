@@ -3,11 +3,13 @@ const API_BASE = 'https://informatiquee-backend.vercel.app/api';
 
 // Helper untuk handle response
 async function handleResponse<T>(response: Response): Promise<T> {
+  const data = await response.json().catch(() => ({ error: 'Unknown error' }));
+  
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
+    throw new Error(data.error || data.message || `HTTP ${response.status}`);
   }
-  return response.json();
+  
+  return data;
 }
 
 // Fetch dengan error handling
