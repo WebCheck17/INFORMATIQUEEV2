@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { UserProfile, ClassNotification } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getAvatarUrl } from "../services/imageHelper"; 
 import { 
   Calendar, 
   MessageSquare, 
