@@ -27,14 +27,15 @@ interface HeaderProps {
 }
 
 // ✅ FIX: Avatar helper yang robust
+// Header.tsx
 const getAvatarUrl = (avatar: string | undefined, gender?: string): string => {
   if (!avatar || avatar === 'default-avatar.png') {
-    return gender === 'female' ? '/images/users/default-2.png' : '/images/users/default-1.png';
+    return gender === 'female' ? '/images/default-2.png' : '/images/default-1.png';
   }
   if (avatar.startsWith('http')) return avatar;
   if (avatar.startsWith('/images/')) return avatar;
   if (avatar.startsWith('/')) return avatar;
-  return `/images/users/${avatar}`;
+  return `/images/${avatar}`;
 };
 
 export default function Header({
