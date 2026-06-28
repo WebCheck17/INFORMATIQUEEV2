@@ -42,7 +42,7 @@ const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return '/images/default-1.png';
   if (path.startsWith('http')) return path;
   if (path.startsWith('/images/')) return path;
-  return `/images/${path}`;
+  return `/images/${path}`;  // ← tambahin /images/ prefix
 };
 
 // Mock data fallback
