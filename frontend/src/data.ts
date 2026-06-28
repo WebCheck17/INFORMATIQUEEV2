@@ -17,7 +17,7 @@ export const INITIAL_USERS = [
     username: "admin",
     name: "Ahmad Mujahid",
     gender: "male",
-    photoUrl: "/images/default-1.png",
+    photoUrl: "default-1.png",
   },
   {
     id: "u_1",
@@ -25,14 +25,14 @@ export const INITIAL_USERS = [
     initials: "BS",
     name: "Budi Santoso",
     gender: "male",
-    photoUrl: "/images/default-1.png",
+    photoUrl: "default-1.png",
   },
   {
     id: "u_2",
     username: "sarah_am",
     name: "Sarah Amanda",
     gender: "female",
-    photoUrl: "/images/default-2.png",
+    photoUrl: "default-2.png",
   }
 ];
 
@@ -86,7 +86,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
     id: "m1",
     title: "Begadang Nyelesaiin Project Web di Cafe",
     description: "Momen ngambis bareng di Kopi Koopen buat nyelesaiin project e-commerce. Penuh tawa, tumpahan kafein, dan kejutan git conflict jam 3 pagi! Akhirnya build kelar juga.",
-    imageUrl: "/images/bootcamp-1.jpeg",  // ← LOCAL PATH
+    imageUrl: "bootcamp-1.jpeg",  // ← LOCAL PATH
     category: "Project",
     tags: ["React", "Express", "Ngambis", "Begadang"],
     date: "2026-06-20",
@@ -100,14 +100,14 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc1",
         authorName: "Sarah Amanda",
-        authorAvatar: "/images/default-2.png",  // ← LOCAL PATH
+        authorAvatar: "default-2.png",  // ← LOCAL PATH
         text: "Laptop Aditya sampe panas bgt waktu itu wkwk!",
         time: "3 hari yang lalu",
         replies: [
           {
             id: "mcr1",
             authorName: "Budi Santoso",
-            authorAvatar: "/images/default-1.png",  // ← LOCAL PATH
+            authorAvatar: "default-1.png",  // ← LOCAL PATH
             text: "Emang, untung ngga meleduk dah laptopnya 😂",
             time: "2 hari yang lalu"
           }
@@ -116,7 +116,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc2",
         authorName: "Ahmad Mujahid (Admin)",
-        authorAvatar: "/images/default-1.png",  // ← LOCAL PATH
+        authorAvatar: "default-1.png",  // ← LOCAL PATH
         text: "Keren kalian! Nanti share ya repo github-nya di room-web, mau liat kodenya.",
         time: "2 hari yang lalu"
       }
@@ -126,7 +126,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
     id: "m2",
     title: "Keseruan Makrab Kelas di Villa Lembang",
     description: "Momen tak terlupakan pas dingin-dingin bakar jagung, main gitar bareng, dan sesi jujur-jujuran pas malam hari. Kerasa bgt vibes kekeluargaannya!",
-    imageUrl: "/images/bootcamp-2.jpeg",  // ← LOCAL PATH
+    imageUrl: "bootcamp-2.jpeg",  // ← LOCAL PATH
     category: "Makrab",
     tags: ["Lembang", "Kebersamaan", "BakarJagung"],
     date: "2026-05-12",
@@ -140,7 +140,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc3",
         authorName: "Budi Santoso",
-        authorAvatar: "/images/default-1.png",  // ← LOCAL PATH
+        authorAvatar: "default-1.png",  // ← LOCAL PATH
         text: "Bakar jagungnya gosong tapi tetep enak wkwk.",
         time: "1 bulan yang lalu"
       }
@@ -150,7 +150,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
     id: "m3",
     title: "Suasana Praktikum Jaringan Komputer",
     description: "Materi crimping kabel LAN dan konfigurasi routing static Cisco. Ada yang kabel LAN-nya kebalik pas dites, auto bikin se-lab ngakak!",
-    imageUrl: "/images/bootcamp-3.jpeg",  // ← LOCAL PATH
+    imageUrl: "bootcamp-3.jpeg",  // ← LOCAL PATH
     category: "Kuliah",
     tags: ["Jaringan", "Cisco", "Praktikum"],
     date: "2026-04-18",
@@ -226,7 +226,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_general",
     senderName: "Sarah Amanda",
     senderUsername: "sarah_am",
-    senderAvatar: "/images/default-2.png",  // ← LOCAL PATH
+    senderAvatar: "default-2.png",  // ← LOCAL PATH
     senderRole: "Sekretaris",
     text: "Halo guys! Jangan lupa besok pagi ada kuliah tamu Etika Profesi IT jam 08:00 WIB di Aula Utama ya. Absensi wajib!",
     timestamp: "2026-06-25T14:15:00"
@@ -236,7 +236,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_general",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "/images/default-1.png",  // ← LOCAL PATH
+    senderAvatar: "default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Siap Sar! Nanti biar aku umumin juga di grup WA biar yang lagi push rank langsung baca wkwk.",
     timestamp: "2026-06-25T14:18:00"
@@ -246,7 +246,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "/images/default-1.png",  // ← LOCAL PATH
+    senderAvatar: "default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Ada yang udah dapet logic custom middleware buat validasi JWT di Express? Share dong, aku nyangkut di next() token verification.",
     timestamp: "2026-06-26T08:30:00"
@@ -256,7 +256,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Ahmad Mujahid (Admin)",
     senderUsername: "admin_hub",
-    senderAvatar: "/images/default-1.png",  // ← LOCAL PATH
+    senderAvatar: "default-1.png",  // ← LOCAL PATH
     senderRole: "Admin",
     text: "Ini Bud, potongan kode ringkas buat verifikasi token JWT di middleware Express...",
     timestamp: "2026-06-26T08:35:00"
@@ -266,7 +266,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "/images/default-1.png",  // ← LOCAL PATH
+    senderAvatar: "default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Wah mantap bang jago! Sangat mencerahkan. Langsung copas & test dlu! @admin_hub 👍⚡️",
     timestamp: "2026-06-26T08:42:00"
@@ -302,8 +302,8 @@ export const INITIAL_NOTIFICATIONS: ClassNotification[] = [
 
 export const INITIAL_SETTINGS: WebsiteSettings = {
   websiteName: "Informatiquee Class",
-  logoUrl: "/images/logo.png",  // ← LOCAL PATH
-  bannerUrl: "/images/banner.jpg",  // ← LOCAL PATH
+  logoUrl: "logo.png",  // ← LOCAL PATH
+  bannerUrl: "banner.jpg",  // ← LOCAL PATH
   themeColor: "indigo",
   isDarkMode: false,
   allowRegister: true,
@@ -339,7 +339,7 @@ export const INITIAL_FILES: UploadedFile[] = [
     type: "image",
     uploadedAt: "2026-06-26T08:29:00",
     owner: "Budi Santoso",
-    url: "/images/screenshot_routing_error.png"  // ← LOCAL PATH
+    url: "screenshot_routing_error.png"  // ← LOCAL PATH
   }
 ];
 
