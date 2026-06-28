@@ -1,42 +1,42 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 
 const app = express();
 
 // ============================================
-// CORS — ROBUST CONFIGURATION
+// CORS — ULTIMATE CONFIG FOR VERCEL
 // ============================================
-// Daftar origin yang diizinkan
-const ALLOWED_ORIGINS = [
-  'https://informatiquee.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:4173',
-];
+// Vercel sometimes strips CORS headers from Express middleware.
+// Solution: Set headers manually BEFORE everything else.
 
-// CORS middleware dengan origin validation
-app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (mobile apps, curl, postman)
-    if (!origin) return callback(null, true);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const ALLOWED_ORIGINS = [
+    'https://informatiquee.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:4173',
+  ];
 
-    if (ALLOWED_ORIGINS.indexOf(origin) !== -1 || ALLOWED_ORIGINS.includes('*')) {
-      callback(null, true);
-    } else {
-      console.warn('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-}));
+  // Set CORS headers for ALL responses (including errors)
+  if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || 'https://informatiquee.vercel.app');
+  } else {
+    res.header('Access-Control-Allow-Origin', 'https://informatiquee.vercel.app');
+  }
 
-// Explicitly handle OPTIONS (preflight) for all routes
-app.options('*', cors());
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
+
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  next();
+});
 
 // ============================================
 // BODY PARSERS
@@ -92,12 +92,6 @@ app.use((req, res) => {
 // ============================================
 app.use((err, req, res, next) => {
   console.error('Express Error:', err);
-
-  // CORS error handling
-  if (err.message === 'Not allowed by CORS') {
-    return res.status(403).json({ error: 'CORS: Origin not allowed' });
-  }
-
   res.status(500).json({ 
     error: err.message,
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
