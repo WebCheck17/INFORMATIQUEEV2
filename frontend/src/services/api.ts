@@ -1,7 +1,6 @@
 // services/api.ts
 const API_BASE = 'https://informatiquee-backend.vercel.app/api';
 
-// Helper untuk handle response
 async function handleResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => ({ error: 'Unknown error' }));
   
@@ -12,61 +11,56 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return data;
 }
 
-// Fetch dengan error handling
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
   
+  // Build config properly - jangan spread sembarangan
   const config: RequestInit = {
     method: options?.method || 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
   };
 
-  // Hanya tambahin body kalo ada dan method bukan GET
+  // Headers
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (options?.headers) {
+    const additionalHeaders = options.headers as Record<string, string>;
+    Object.assign(headers, additionalHeaders);
+  }
+  
+  config.headers = headers;
+
+  // Body - hanya untuk method selain GET
   if (options?.body && config.method !== 'GET') {
     config.body = options.body;
   }
 
-  console.log("FETCH CONFIG:", { url, ...config, body: config.body ? JSON.parse(config.body as string) : undefined });
+  console.log("API REQUEST:", {
+    url,
+    method: config.method,
+    body: config.body ? JSON.parse(config.body as string) : undefined
+  });
 
   const response = await fetch(url, config);
   
-  const data = await response.json().catch(() => ({ error: 'Unknown error' }));
-  
-  if (!response.ok) {
-    throw new Error(data.error || data.message || `HTTP ${response.status}`);
-  }
-  
-  return data;
-}
-
-// Auth
-login: (username: string, password: string) => {
-  const payload = JSON.stringify({ username, password });
-  console.log("LOGIN PAYLOAD:", payload);
-  
-  return fetchAPI<{ token: string; user: any }>('/auth/login', {
-    method: 'POST',
-    body: payload,
+  console.log("API RESPONSE:", {
+    status: response.status,
+    statusText: response.statusText
   });
-},
 
-// Auth helper - ambil token dari localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+  return handleResponse<T>(response);
+}
 
 // API Endpoints
 export const api = {
-  // ========== AUTH ==========
-  login: (email: string, password: string) => 
-    fetchAPI<{ token: string; user: any }>('/auth/login', {
+  // Auth
+  login: (username: string, password: string) => {
+    return fetchAPI<{ token: string; user: any }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
+      body: JSON.stringify({ username, password }),
+    });
+  },
   
   register: (data: any) => 
     fetchAPI<any>('/auth/register', {
@@ -76,10 +70,10 @@ export const api = {
   
   getMe: () => 
     fetchAPI<any>('/auth/me', {
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
     }),
 
-  // ========== USERS ==========
+  // Users
   getUsers: () => fetchAPI<any[]>('/users'),
   
   getUserCount: async () => {
@@ -89,7 +83,7 @@ export const api = {
   
   getUserById: (id: number) => fetchAPI<any>(`/users/${id}`),
 
-  // ========== POSTS (MEMORIES) ==========
+  // Posts (Memories)
   getPosts: () => fetchAPI<any[]>('/posts'),
   
   getPostBySlug: (slug: string) => fetchAPI<any>(`/posts/${slug}`),
@@ -97,19 +91,19 @@ export const api = {
   createPost: (data: any) => 
     fetchAPI<any>('/posts', {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
       body: JSON.stringify(data),
     }),
   
   likePost: (id: number) => 
     fetchAPI<{ liked: boolean }>(`/posts/${id}/like`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
     }),
   
   getPostComments: (id: number) => fetchAPI<any[]>(`/posts/${id}/comments`),
 
-  // ========== DEADLINES (ASSIGNMENTS) ==========
+  // Deadlines (Assignments)
   getDeadlines: () => fetchAPI<any[]>('/deadlines'),
   
   getDeadlineBySlug: (slug: string) => fetchAPI<any>(`/deadlines/${slug}`),
@@ -117,18 +111,18 @@ export const api = {
   createDeadline: (data: any) => 
     fetchAPI<any>('/deadlines', {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
       body: JSON.stringify(data),
     }),
   
   updateDeadlineStatus: (id: number, status: string) => 
     fetchAPI<any>(`/deadlines/${id}/status`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
       body: JSON.stringify({ status }),
     }),
 
-  // ========== CHAT ==========
+  // Chat
   getChatRooms: () => fetchAPI<any[]>('/chat/rooms'),
   
   getChatRoomById: (id: number) => fetchAPI<any>(`/chat/rooms/${id}`),
@@ -138,7 +132,7 @@ export const api = {
   sendMessage: (roomId: number, content: string, messageType?: string) => 
     fetchAPI<any>(`/chat/rooms/${roomId}/messages`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
       body: JSON.stringify({ 
         content, 
         message_type: messageType || 'text' 
@@ -148,53 +142,30 @@ export const api = {
   pinMessage: (messageId: number) => 
     fetchAPI<any>(`/chat/messages/${messageId}/pin`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
     }),
 
-  // ========== NOTIFICATIONS ==========
+  // Notifications
   getNotifications: () => 
     fetchAPI<any[]>('/notifications', {
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
     }),
 
-  // ========== SETTINGS ==========
+  // Settings
   getSettings: () => fetchAPI<any>('/settings'),
   
   updateSettings: (data: any) => 
     fetchAPI<any>('/settings', {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
       body: JSON.stringify(data),
     }),
 
-  // ========== ACTIVITY LOGS ==========
+  // Activity Logs
   getActivityLogs: () => 
     fetchAPI<any[]>('/activity-logs', {
-      headers: getAuthHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem('kelashub_token') || ''}` },
     }),
 };
-// Tambahin di api.ts:
-
-// ========== AUTH ==========
-login: (username: string, password: string) => 
-  fetchAPI<{ token: string; user: any }>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ username, password }),
-  }),
-
-register: (data: {
-  name: string;
-  username: string;
-  email: string;
-  gender: string;
-  nim: string;
-  password: string;
-  kelas: string;
-  jurusan: string;
-}) => 
-  fetchAPI<any>('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
 
 export default api;
