@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { UserProfile, ClassNotification } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -12,7 +12,8 @@ import {
   Home, 
   Menu, 
   X,
-  GraduationCap
+  GraduationCap,
+  User
 } from "lucide-react";
 
 interface HeaderProps {
@@ -24,6 +25,16 @@ interface HeaderProps {
   onClearNotification: (id: string) => void;
   onOpenLogin: () => void;
 }
+
+// Helper untuk resolve avatar path
+const getAvatarUrl = (avatar: string | undefined, gender?: string): string => {
+  if (!avatar || avatar === 'default-avatar.png') {
+    return gender === 'female' ? '/images/default-2.png' : '/images/default-1.png';
+  }
+  if (avatar.startsWith('http')) return avatar;
+  if (avatar.startsWith('/images/')) return avatar;
+  return `/images/${avatar}`;
+};
 
 export default function Header({
   user,
@@ -41,24 +52,14 @@ export default function Header({
   const notifRef = useRef<HTMLDivElement>(null);
   const mobileRef = useRef<HTMLDivElement>(null);
 
-  // ✅ DEBUG: Log user data
-  console.log("Header DEBUG:", { 
-    isLoggedIn, 
-    userRole: user?.role, 
-    userName: user?.name,
-    userId: user?.id 
-  });
-
-  // ✅ FIX: Check admin dengan multiple conditions (case-insensitive)
-  const isAdmin = React.useMemo(() => {
+  // ✅ FIX: Admin check dengan useMemo + case-insensitive
+  const isAdmin = useMemo(() => {
     if (!isLoggedIn || !user?.role) return false;
     const role = user.role.toLowerCase().trim();
     return role === "admin" || role === "administrator";
   }, [isLoggedIn, user?.role]);
 
-  // ✅ DEBUG: Log admin check
-  console.log("Header DEBUG isAdmin:", isAdmin);
-
+  // Base tabs
   const tabs = [
     { id: "landing", path: "/", label: "Beranda", icon: Home, guestOk: true },
     { id: "memories", path: "/kelas", label: "Galeri Foto", icon: ImageIcon, guestOk: true },
@@ -66,7 +67,7 @@ export default function Header({
     { id: "assignments", path: "/tugas", label: "Deadline Tugas", icon: Calendar, guestOk: true },
   ];
 
-  // ✅ FIX: Admin panel dengan pengecekan yang lebih robust
+  // ✅ FIX: Admin panel dengan pengecekan robust
   if (isLoggedIn && isAdmin) {
     tabs.push({ 
       id: "admin", 
@@ -224,9 +225,20 @@ export default function Header({
                 >
                   <div 
                     className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center font-black text-[10.5px] text-white shrink-0 border border-black"
-                    style={{ backgroundColor: user.bgColor }}
+                    style={{ backgroundColor: user.bgColor || '#FF6B6B' }}
                   >
-                    {user.initials}
+                    {user.photoUrl ? (
+                      <img 
+                        src={getAvatarUrl(user.photoUrl, user.gender)} 
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      user.initials || <User className="w-4 h-4" />
+                    )}
                   </div>
                   <span className="hidden sm:inline-block text-[11px] font-black text-slate-900 pr-1 truncate max-w-[100px]">
                     {user?.name?.split(" ")[0] || "User"}
