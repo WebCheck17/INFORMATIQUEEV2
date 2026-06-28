@@ -33,29 +33,24 @@ router.get('/:slug', async (req, res) => {
     // Increment view count
     await db.query('UPDATE posts SET view_count = view_count + 1 WHERE slug = $1', [slug]);
     
-    const result = await db.query(
-      `SELECT p.*, 
-              u.name as author_name, 
-              u.avatar as author_avatar,
-              (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as likes_count,
-              (SELECT COUNT(*) FROM comments WHERE post_id = p.id AND deleted_at IS NULL) as comments_count
-       FROM posts p
-       JOIN users u ON p.user_id = u.id
-       WHERE p.slug = $1 AND p.deleted_at IS NULL`,
-      [slug]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Post tidak ditemukan' });
-    }
-    
-    res.json(result.rows[0]);
-    
-  } catch (err) {
-    console.error('Get post error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+// routes/posts.js - Kirim path relatif
+const result = await db.query(
+  `SELECT p.id, p.title, p.description, p.image_url, p.created_at,
+          u.name as author_name, u.avatar as author_avatar
+   FROM posts p
+   JOIN users u ON p.user_id = u.id
+   WHERE p.status = 'published'`
+);
+
+res.json(result.rows.map(row => ({
+  id: row.id,
+  title: row.title,
+  description: row.description,
+  image_url: row.image_url || 'default-1.png',  // ← path relatif
+  created_at: row.created_at,
+  author_name: row.author_name,
+  author_avatar: row.author_avatar || 'default-1.png',  // ← path relatif
+})));
 
 // POST /api/posts
 router.post('/', async (req, res) => {
