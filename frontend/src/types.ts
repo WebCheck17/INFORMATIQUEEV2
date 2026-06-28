@@ -1,6 +1,5 @@
 // types.ts - Versi Final yang Konsisten
 
-// ========== USER ==========
 export interface UserProfile {
   id: string | number;
   username: string;
@@ -10,10 +9,11 @@ export interface UserProfile {
   jurusan?: string;
   bio?: string;
   email?: string;
-  role: string;
-  photoUrl?: string;      // fallback untuk kompatibilitas
-  avatar?: string;        // path relatif dari backend (e.g. "bootcamp-1.jpeg")
-  gender?: string;        // "male" | "female"
+  role: string;         // "admin" | "member" (backend role)
+  jabatan?: string;     // "Ketua Kelas" | "Wakil Ketua" | "Sekretaris" | dll
+  photoUrl?: string;    // resolved URL (deprecated, use getAvatarUrl)
+  avatar?: string;      // path relatif dari backend (e.g. "bootcamp-1.jpeg")
+  gender?: string;      // "male" | "female"
   dateJoined?: string;
   isActive?: boolean;
   streakDays?: number;
