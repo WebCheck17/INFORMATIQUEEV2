@@ -41,24 +41,26 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
     
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        email: user.email,
-        nim: user.nim,
-        kelas: user.kelas,
-        jurusan: user.jurusan,
-        bio: user.bio,
-        role: user.role_name,
-        roleSlug: user.role_slug,
-        photoUrl: user.avatar || '/images/default-1.png',
-        bgColor: '#' + require('crypto').createHash('md5').update(user.name).digest('hex').substring(0, 6),
-        initials: user.name.substring(0, 2).toUpperCase()
-      }
-    });
+// routes/auth.js
+res.json({
+  token,
+  user: {
+    id: user.id,
+    username: user.username,
+    name: user.name,
+    email: user.email,
+    nim: user.nim,
+    kelas: user.kelas,
+    jurusan: user.jurusan,
+    bio: user.bio,
+    role: user.role?.toLowerCase() || 'member',  // lowercase!
+    avatar: user.avatar?.startsWith('/') ? user.avatar : `/images/${user.avatar}`,
+    photoUrl: user.avatar?.startsWith('/') ? user.avatar : `/images/${user.avatar}`,
+    gender: user.gender,
+    bgColor: user.bg_color || '#' + Math.floor(Math.random()*16777215).toString(16),
+    initials: user.initials || user.name?.split(" ").map((n) => n[0]).join("").substring(0,2).toUpperCase(),
+  }
+});
     
   } catch (err) {
     console.error('Login error:', err);
