@@ -16,8 +16,8 @@ export const INITIAL_USERS = [
     id: "u_admin",
     username: "admin",
     name: "Ahmad Mujahid",
-    gender: "male",  // <-- tambahin
-    photoUrl: "/images/users/default-1.png",  // laki-laki
+    gender: "male",
+    photoUrl: "/images/users/default-1.png",
   },
   {
     id: "u_1",
@@ -31,7 +31,7 @@ export const INITIAL_USERS = [
     id: "u_2",
     username: "sarah_am",
     name: "Sarah Amanda",
-    gender: "female",  // <-- perempuan
+    gender: "female",
     photoUrl: "/images/users/default-2.png",
   }
 ];
@@ -86,7 +86,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
     id: "m1",
     title: "Begadang Nyelesaiin Project Web di Cafe",
     description: "Momen ngambis bareng di Kopi Koopen buat nyelesaiin project e-commerce. Penuh tawa, tumpahan kafein, dan kejutan git conflict jam 3 pagi! Akhirnya build kelar juga.",
-    imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/images/bootcamp-1.jpeg",  // ← LOCAL PATH
     category: "Project",
     tags: ["React", "Express", "Ngambis", "Begadang"],
     date: "2026-06-20",
@@ -100,14 +100,14 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc1",
         authorName: "Sarah Amanda",
-        authorAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+        authorAvatar: "/images/users/default-2.png",  // ← LOCAL PATH
         text: "Laptop Aditya sampe panas bgt waktu itu wkwk!",
         time: "3 hari yang lalu",
         replies: [
           {
             id: "mcr1",
             authorName: "Budi Santoso",
-            authorAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+            authorAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
             text: "Emang, untung ngga meleduk dah laptopnya 😂",
             time: "2 hari yang lalu"
           }
@@ -116,7 +116,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc2",
         authorName: "Ahmad Mujahid (Admin)",
-        authorAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+        authorAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
         text: "Keren kalian! Nanti share ya repo github-nya di room-web, mau liat kodenya.",
         time: "2 hari yang lalu"
       }
@@ -126,7 +126,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
     id: "m2",
     title: "Keseruan Makrab Kelas di Villa Lembang",
     description: "Momen tak terlupakan pas dingin-dingin bakar jagung, main gitar bareng, dan sesi jujur-jujuran pas malam hari. Kerasa bgt vibes kekeluargaannya!",
-    imageUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/images/bootcamp-2.jpeg",  // ← LOCAL PATH
     category: "Makrab",
     tags: ["Lembang", "Kebersamaan", "BakarJagung"],
     date: "2026-05-12",
@@ -140,7 +140,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc3",
         authorName: "Budi Santoso",
-        authorAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+        authorAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
         text: "Bakar jagungnya gosong tapi tetep enak wkwk.",
         time: "1 bulan yang lalu"
       }
@@ -150,7 +150,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
     id: "m3",
     title: "Suasana Praktikum Jaringan Komputer",
     description: "Materi crimping kabel LAN dan konfigurasi routing static Cisco. Ada yang kabel LAN-nya kebalik pas dites, auto bikin se-lab ngakak!",
-    imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/images/bootcamp-3.jpeg",  // ← LOCAL PATH
     category: "Kuliah",
     tags: ["Jaringan", "Cisco", "Praktikum"],
     date: "2026-04-18",
@@ -171,7 +171,7 @@ export const INITIAL_ASSIGNMENTS: DosenAssignment[] = [
     lecturer: "Dr. Eng. Hermawan, M.T.",
     title: "E-Commerce Fullstack dengan React & Express",
     description: "Membuat aplikasi web belanja online sederhana lengkap dengan state management, routing, API CRUD, dan auth dasar. Dikumpulkan berupa link repo GitHub di portal kulon.",
-    dueDate: "2026-06-28T23:59:00", // 2 days from now (current is June 26)
+    dueDate: "2026-06-28T23:59:00",
     status: "Belum",
     priority: "Tinggi",
     attachment: {
@@ -187,7 +187,7 @@ export const INITIAL_ASSIGNMENTS: DosenAssignment[] = [
     lecturer: "Prof. Dr. Ir. Rina Astuti",
     title: "Klasifikasi Gambar Menggunakan Model CNN",
     description: "Implementasi deep learning sederhana untuk klasifikasi dataset gambar CIFAR-10 memakai TensorFlow/PyTorch. Output berupa file .ipynb dan laporan format PDF.",
-    dueDate: "2026-07-03T15:00:00", // ~7 days from now
+    dueDate: "2026-07-03T15:00:00",
     status: "Belum",
     priority: "Sedang",
     attachment: {
@@ -203,7 +203,7 @@ export const INITIAL_ASSIGNMENTS: DosenAssignment[] = [
     lecturer: "Drs. Bambang Wijaya, M.Si.",
     title: "Resume Analisis Kasus Pelanggaran UU ITE",
     description: "Analisis salah satu kasus pelanggaran UU ITE terpopuler di Indonesia. Berikan tanggapan etika TI, pasal yang dilanggar, serta solusi preventif minimal 3 halaman A4.",
-    dueDate: "2026-06-26T22:00:00", // today evening (very close!)
+    dueDate: "2026-06-26T22:00:00",
     status: "Belum",
     priority: "Biasa",
     notes: "Format penulisan Times New Roman 12, Spasi 1.5, Justify."
@@ -214,7 +214,7 @@ export const INITIAL_ASSIGNMENTS: DosenAssignment[] = [
     lecturer: "Iwan Setiawan, S.Kom., M.T.",
     title: "Perancangan Skema ETL dan Star Schema",
     description: "Membuat rancangan tabel dimensi, tabel fakta, dan alur integrasi data (ETL) dari database transaksi retail ke data warehouse.",
-    dueDate: "2026-06-22T08:00:00", // Past date (Terlambat)
+    dueDate: "2026-06-22T08:00:00",
     status: "Selesai",
     priority: "Sedang"
   }
@@ -226,7 +226,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_general",
     senderName: "Sarah Amanda",
     senderUsername: "sarah_am",
-    senderAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+    senderAvatar: "/images/users/default-2.png",  // ← LOCAL PATH
     senderRole: "Sekretaris",
     text: "Halo guys! Jangan lupa besok pagi ada kuliah tamu Etika Profesi IT jam 08:00 WIB di Aula Utama ya. Absensi wajib!",
     timestamp: "2026-06-25T14:15:00"
@@ -236,7 +236,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_general",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+    senderAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Siap Sar! Nanti biar aku umumin juga di grup WA biar yang lagi push rank langsung baca wkwk.",
     timestamp: "2026-06-25T14:18:00"
@@ -246,7 +246,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+    senderAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Ada yang udah dapet logic custom middleware buat validasi JWT di Express? Share dong, aku nyangkut di next() token verification.",
     timestamp: "2026-06-26T08:30:00"
@@ -256,9 +256,9 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Ahmad Mujahid (Admin)",
     senderUsername: "admin_hub",
-    senderAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    senderAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
     senderRole: "Admin",
-    text: "Ini Bud, potongan kode ringkas buat verifikasi token JWT di middleware Express. Bisa dipasang di rute proteksi mu:\n\n```javascript\nconst jwt = require('jsonwebtoken');\n\nconst authMiddleware = (req, res, next) => {\n  const authHeader = req.headers['authorization'];\n  const token = authHeader && authHeader.split(' ')[1];\n  \n  if (!token) {\n    return res.status(401).json({ message: 'Akses ditolak, token hilang!' });\n  }\n  \n  try {\n    const decoded = jwt.verify(token, process.env.JWT_SECRET);\n    req.user = decoded;\n    next();\n  } catch (err) {\n    res.status(403).json({ message: 'Token tidak valid atau kedaluwarsa!' });\n  }\n};\n\nmodule.exports = authMiddleware;\n```",
+    text: "Ini Bud, potongan kode ringkas buat verifikasi token JWT di middleware Express...",
     timestamp: "2026-06-26T08:35:00"
   },
   {
@@ -266,7 +266,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+    senderAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Wah mantap bang jago! Sangat mencerahkan. Langsung copas & test dlu! @admin_hub 👍⚡️",
     timestamp: "2026-06-26T08:42:00"
@@ -302,8 +302,8 @@ export const INITIAL_NOTIFICATIONS: ClassNotification[] = [
 
 export const INITIAL_SETTINGS: WebsiteSettings = {
   websiteName: "Informatiquee Class",
-  logoUrl: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=80&q=80",
-  bannerUrl: "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80",
+  logoUrl: "/images/logo.png",  // ← LOCAL PATH
+  bannerUrl: "/images/banner.jpg",  // ← LOCAL PATH
   themeColor: "indigo",
   isDarkMode: false,
   allowRegister: true,
@@ -339,7 +339,7 @@ export const INITIAL_FILES: UploadedFile[] = [
     type: "image",
     uploadedAt: "2026-06-26T08:29:00",
     owner: "Budi Santoso",
-    url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=150&q=80"
+    url: "/images/screenshot_routing_error.png"  // ← LOCAL PATH
   }
 ];
 
