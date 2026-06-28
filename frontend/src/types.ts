@@ -10,10 +10,10 @@ export interface UserProfile {
   jurusan?: string;
   bio?: string;
   email?: string;
-  role: string;  // "admin" | "member" | "guest" | dll (lowercase dari backend)
-  photoUrl?: string;
-  avatar?: string;
-  gender?: string;
+  role: string;
+  photoUrl?: string;      // fallback untuk kompatibilitas
+  avatar?: string;        // path relatif dari backend (e.g. "bootcamp-1.jpeg")
+  gender?: string;        // "male" | "female"
   dateJoined?: string;
   isActive?: boolean;
   streakDays?: number;
