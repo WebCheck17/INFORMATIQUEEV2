@@ -2,7 +2,7 @@
 
 export interface UserProfile {
   id: string | number;
-  username: string
+  username: string;
   name: string;
   nim?: string;
   kelas?: string;
