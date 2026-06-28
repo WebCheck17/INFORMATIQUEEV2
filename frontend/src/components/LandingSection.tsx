@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Image as ImageIcon, Calendar, MessageSquare, Users, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { api } from "../services/api";
 
-// Types (bisa di-import dari file terpisah)
+// Types
 interface ClassPhotoMemory {
   id: number;
   imageUrl: string;
@@ -37,25 +37,33 @@ interface LandingSectionProps {
   isLoggedIn: boolean;
 }
 
+// Helper untuk resolve image path
+const getImageUrl = (path: string | null | undefined): string => {
+  if (!path) return '/images/default-1.png';
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('/images/')) return path;
+  return `/images/${path}`;
+};
+
 // Mock data fallback
 const MOCK_MEMORIES: ClassPhotoMemory[] = [
   {
     id: 1,
-    imageUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+    imageUrl: "memory-1.jpg",
     caption: "Kegiatan bonding kelas semester 1",
-    date: "2025-06-15",
+    date: "15 Juni 2025",
   },
   {
     id: 2,
-    imageUrl: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+    imageUrl: "memory-2.jpg",
     caption: "Presentasi proyek akhir",
-    date: "2025-06-10",
+    date: "10 Juni 2025",
   },
   {
     id: 3,
-    imageUrl: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800",
+    imageUrl: "memory-3.jpg",
     caption: "Study group bareng di perpustakaan",
-    date: "2025-06-05",
+    date: "5 Juni 2025",
   },
 ];
 
@@ -108,7 +116,6 @@ export default function LandingSection({
     users: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [useMockData, setUseMockData] = useState(false);
 
   // Fetch data saat mount
   useEffect(() => {
@@ -124,7 +131,7 @@ export default function LandingSection({
     } catch (err) {
       console.error("Failed to fetch users:", err);
       setErrors(prev => ({ ...prev, users: "Gagal memuat data user" }));
-      setUserCount(MOCK_MEMORIES.length); // fallback
+      setUserCount(0);
       setLoading(prev => ({ ...prev, users: false }));
     }
 
@@ -133,7 +140,7 @@ export default function LandingSection({
       const posts = await api.getPosts();
       const mappedMemories: ClassPhotoMemory[] = posts.slice(0, 3).map((post: any) => ({
         id: post.id,
-        imageUrl: post.image_url || "https://via.placeholder.com/400x300",
+        imageUrl: getImageUrl(post.image_url),
         caption: post.title || post.description || "Untitled",
         date: new Date(post.created_at).toLocaleDateString('id-ID', {
           day: 'numeric',
@@ -141,7 +148,6 @@ export default function LandingSection({
           year: 'numeric',
         }),
         authorName: post.author_name,
-        authorAvatar: post.author_avatar,
         likesCount: parseInt(post.likes_count) || 0,
         commentsCount: parseInt(post.comments_count) || 0,
       }));
@@ -203,7 +209,7 @@ export default function LandingSection({
     ? assignments.filter(a => new Date(a.deadline) > new Date()).slice(0, 3)
     : MOCK_ASSIGNMENTS.filter(a => new Date(a.deadline) > new Date()).slice(0, 3);
   const activeRooms = rooms.length > 0 ? rooms : MOCK_ROOMS;
-  const displayUserCount = userCount || MOCK_MEMORIES.length;
+  const displayUserCount = userCount || activeRooms.length;
 
   const isLoading = Object.values(loading).some(v => v);
 
@@ -342,12 +348,12 @@ export default function LandingSection({
               >
                 <div className="aspect-video bg-slate-200 overflow-hidden">
                   <img 
-                    src={memory.imageUrl} 
+                    src={getImageUrl(memory.imageUrl)} 
                     alt={memory.caption}
                     className="w-full h-full object-cover"
                     loading="lazy"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x300?text=No+Image";
+                      (e.target as HTMLImageElement).src = '/images/default-1.png';
                     }}
                   />
                 </div>
