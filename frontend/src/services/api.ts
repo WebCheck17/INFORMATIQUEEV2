@@ -147,5 +147,28 @@ export const api = {
       headers: getAuthHeaders(),
     }),
 };
+// Tambahin di api.ts:
+
+// ========== AUTH ==========
+login: (username: string, password: string) => 
+  fetchAPI<{ token: string; user: any }>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  }),
+
+register: (data: {
+  name: string;
+  username: string;
+  email: string;
+  gender: string;
+  nim: string;
+  password: string;
+  kelas: string;
+  jurusan: string;
+}) => 
+  fetchAPI<any>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
 
 export default api;
