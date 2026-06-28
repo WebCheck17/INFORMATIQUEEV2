@@ -39,11 +39,12 @@ interface LandingSectionProps {
 }
 
 // ✅ FIX: Image helper yang robust
+// LandingSection.tsx
 const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return '/images/default-1.png';
   if (path.startsWith('http')) return path;
   if (path.startsWith('/images/')) return path;
-  if (path.startsWith('/')) return path;  // sudah absolute path
+  if (path.startsWith('/')) return path;
   return `/images/${path}`;
 };
 
