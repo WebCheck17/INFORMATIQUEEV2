@@ -41,6 +41,24 @@ export default function Header({
   const notifRef = useRef<HTMLDivElement>(null);
   const mobileRef = useRef<HTMLDivElement>(null);
 
+  // ✅ DEBUG: Log user data
+  console.log("Header DEBUG:", { 
+    isLoggedIn, 
+    userRole: user?.role, 
+    userName: user?.name,
+    userId: user?.id 
+  });
+
+  // ✅ FIX: Check admin dengan multiple conditions (case-insensitive)
+  const isAdmin = React.useMemo(() => {
+    if (!isLoggedIn || !user?.role) return false;
+    const role = user.role.toLowerCase().trim();
+    return role === "admin" || role === "administrator";
+  }, [isLoggedIn, user?.role]);
+
+  // ✅ DEBUG: Log admin check
+  console.log("Header DEBUG isAdmin:", isAdmin);
+
   const tabs = [
     { id: "landing", path: "/", label: "Beranda", icon: Home, guestOk: true },
     { id: "memories", path: "/kelas", label: "Galeri Foto", icon: ImageIcon, guestOk: true },
@@ -48,8 +66,15 @@ export default function Header({
     { id: "assignments", path: "/tugas", label: "Deadline Tugas", icon: Calendar, guestOk: true },
   ];
 
-  if (isLoggedIn && user.role === "Admin") {
-    tabs.push({ id: "admin", path: "/admin", label: "Admin Panel", icon: ShieldCheck, guestOk: false });
+  // ✅ FIX: Admin panel dengan pengecekan yang lebih robust
+  if (isLoggedIn && isAdmin) {
+    tabs.push({ 
+      id: "admin", 
+      path: "/admin", 
+      label: "Admin Panel", 
+      icon: ShieldCheck, 
+      guestOk: false 
+    });
   }
 
   const currentPath = location.pathname;
