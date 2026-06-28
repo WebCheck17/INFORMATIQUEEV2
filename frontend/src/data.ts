@@ -17,7 +17,7 @@ export const INITIAL_USERS = [
     username: "admin",
     name: "Ahmad Mujahid",
     gender: "male",
-    photoUrl: "/images/users/default-1.png",
+    photoUrl: "/images/default-1.png",
   },
   {
     id: "u_1",
@@ -25,14 +25,14 @@ export const INITIAL_USERS = [
     initials: "BS",
     name: "Budi Santoso",
     gender: "male",
-    photoUrl: "/images/users/default-1.png",
+    photoUrl: "/images/default-1.png",
   },
   {
     id: "u_2",
     username: "sarah_am",
     name: "Sarah Amanda",
     gender: "female",
-    photoUrl: "/images/users/default-2.png",
+    photoUrl: "/images/default-2.png",
   }
 ];
 
@@ -100,14 +100,14 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc1",
         authorName: "Sarah Amanda",
-        authorAvatar: "/images/users/default-2.png",  // ← LOCAL PATH
+        authorAvatar: "/images/default-2.png",  // ← LOCAL PATH
         text: "Laptop Aditya sampe panas bgt waktu itu wkwk!",
         time: "3 hari yang lalu",
         replies: [
           {
             id: "mcr1",
             authorName: "Budi Santoso",
-            authorAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
+            authorAvatar: "/images/default-1.png",  // ← LOCAL PATH
             text: "Emang, untung ngga meleduk dah laptopnya 😂",
             time: "2 hari yang lalu"
           }
@@ -116,7 +116,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc2",
         authorName: "Ahmad Mujahid (Admin)",
-        authorAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
+        authorAvatar: "/images/default-1.png",  // ← LOCAL PATH
         text: "Keren kalian! Nanti share ya repo github-nya di room-web, mau liat kodenya.",
         time: "2 hari yang lalu"
       }
@@ -140,7 +140,7 @@ export const INITIAL_MEMORIES: ClassPhotoMemory[] = [
       {
         id: "mc3",
         authorName: "Budi Santoso",
-        authorAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
+        authorAvatar: "/images/default-1.png",  // ← LOCAL PATH
         text: "Bakar jagungnya gosong tapi tetep enak wkwk.",
         time: "1 bulan yang lalu"
       }
@@ -226,7 +226,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_general",
     senderName: "Sarah Amanda",
     senderUsername: "sarah_am",
-    senderAvatar: "/images/users/default-2.png",  // ← LOCAL PATH
+    senderAvatar: "/images/default-2.png",  // ← LOCAL PATH
     senderRole: "Sekretaris",
     text: "Halo guys! Jangan lupa besok pagi ada kuliah tamu Etika Profesi IT jam 08:00 WIB di Aula Utama ya. Absensi wajib!",
     timestamp: "2026-06-25T14:15:00"
@@ -236,7 +236,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_general",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
+    senderAvatar: "/images/default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Siap Sar! Nanti biar aku umumin juga di grup WA biar yang lagi push rank langsung baca wkwk.",
     timestamp: "2026-06-25T14:18:00"
@@ -246,7 +246,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
+    senderAvatar: "/images/default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Ada yang udah dapet logic custom middleware buat validasi JWT di Express? Share dong, aku nyangkut di next() token verification.",
     timestamp: "2026-06-26T08:30:00"
@@ -256,7 +256,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Ahmad Mujahid (Admin)",
     senderUsername: "admin_hub",
-    senderAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
+    senderAvatar: "/images/default-1.png",  // ← LOCAL PATH
     senderRole: "Admin",
     text: "Ini Bud, potongan kode ringkas buat verifikasi token JWT di middleware Express...",
     timestamp: "2026-06-26T08:35:00"
@@ -266,7 +266,7 @@ export const INITIAL_CHATS: ChatMessage[] = [
     roomId: "room_web",
     senderName: "Budi Santoso",
     senderUsername: "budi_s",
-    senderAvatar: "/images/users/default-1.png",  // ← LOCAL PATH
+    senderAvatar: "/images/default-1.png",  // ← LOCAL PATH
     senderRole: "Ketua Kelas",
     text: "Wah mantap bang jago! Sangat mencerahkan. Langsung copas & test dlu! @admin_hub 👍⚡️",
     timestamp: "2026-06-26T08:42:00"
