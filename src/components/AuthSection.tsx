@@ -58,7 +58,7 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
       // DEBUG: Coba fetch manual dulu
       console.log("DEBUG 2 - apiMode true, fetching...");
       
-      const res = await fetch("https://informatiquee-backend.vercel.app/api/auth/login", {
+      const res = await fetch("https://informatiquee.ct.ws/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
