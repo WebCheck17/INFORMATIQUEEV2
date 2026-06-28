@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
         bio: user.bio,
         role: user.role_name,
         roleSlug: user.role_slug,
-        photoUrl: user.avatar || '/images/users/default-1.png',
+        photoUrl: user.avatar || '/images/default-1.png',
         bgColor: '#' + require('crypto').createHash('md5').update(user.name).digest('hex').substring(0, 6),
         initials: user.name.substring(0, 2).toUpperCase()
       }
@@ -86,7 +86,7 @@ router.post('/register', async (req, res) => {
     }
     
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const avatar = gender === 'female' ? '/images/users/default-2.png' : '/images/users/default-1.png';
+    const avatar = gender === 'female' ? '/images/default-2.png' : '/images/default-1.png';
     const bio = 'Mahasiswa baru di KelasHub! 👋';
     
     const result = await db.query(
@@ -143,7 +143,7 @@ router.get('/me', async (req, res) => {
         jurusan: user.jurusan,
         bio: user.bio,
         role: user.role_name,
-        photoUrl: user.avatar || '/images/users/default-1.png',
+        photoUrl: user.avatar || '/images/default-1.png',
         bgColor: '#' + require('crypto').createHash('md5').update(user.name).digest('hex').substring(0, 6),
         initials: user.name.substring(0, 2).toUpperCase()
       }
