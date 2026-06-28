@@ -48,6 +48,7 @@ app.use('/api/chat', require('../routes/chat'));
 app.use('/api/notifications', require('../routes/notifications'));
 app.use('/api/settings', require('../routes/settings'));
 app.use('/api/activity-logs', require('../routes/activity'));
+app.use('/api/auth', require('./routes/register'));
 
 // 404 handler
 app.use((req, res) => {
