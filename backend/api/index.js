@@ -1,46 +1,27 @@
 require('dotenv').config();
 
-// ============================================
-// GLOBAL ERROR HANDLERS (catch everything)
-// ============================================
-process.on('uncaughtException', (err) => {
-  console.error('UNCAUGHT EXCEPTION:', err);
-});
-process.on('unhandledRejection', (err) => {
-  console.error('UNHANDLED REJECTION:', err);
-});
-
 const express = require('express');
+const cors = require('cors');
 const app = express();
 
 // ============================================
-// CORS — MUST BE FIRST
+// CORS - MUST BE FIRST
 // ============================================
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const ALLOWED_ORIGINS = [
+app.use(cors({
+  origin: [
     'https://informatiquee.vercel.app',
+    'https://informatiquee-frontend.vercel.app',
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:4173',
-  ];
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
-  if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin || 'https://informatiquee.vercel.app');
-  } else {
-    res.header('Access-Control-Allow-Origin', 'https://informatiquee.vercel.app');
-  }
-
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Max-Age', '86400');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-  next();
-});
+// Handle OPTIONS preflight
+app.options('*', cors());
 
 // ============================================
 // BODY PARSERS
@@ -49,10 +30,10 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ============================================
-// REQUEST LOGGING (for debugging)
+// REQUEST LOGGING
 // ============================================
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.headers.origin || 'none'}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} | Origin: ${req.headers.origin || 'none'}`);
   next();
 });
 
@@ -62,7 +43,7 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'Server is running',
+    message: 'Vercel backend is running!',
     timestamp: new Date().toISOString(),
     env: {
       node_env: process.env.NODE_ENV || 'development',
@@ -73,11 +54,11 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================
-// DB TEST ENDPOINT
+// DB TEST
 // ============================================
 app.get('/api/db-test', async (req, res) => {
   try {
-    const db = require('../db');
+    const db = require('./db');
     const result = await db.query('SELECT NOW() as now');
     res.json({ 
       status: 'OK', 
@@ -88,63 +69,68 @@ app.get('/api/db-test', async (req, res) => {
     console.error('DB Test Error:', err.message);
     res.status(500).json({ 
       status: 'ERROR', 
-      database: err.message 
+      error: err.message 
     });
   }
 });
 
 // ============================================
-// ROUTES (with error handling)
+// ROUTES
 // ============================================
 try {
-  app.use('/api/auth', require('../routes/auth'));
+  app.use('/api/auth', require('./routes/auth'));
+  console.log('✅ Auth routes loaded');
 } catch (err) {
-  console.error('Failed to load auth routes:', err.message);
-  app.use('/api/auth', (req, res) => res.status(500).json({ error: 'Auth module failed to load' }));
+  console.error('❌ Auth routes failed:', err.message);
 }
 
 try {
-  app.use('/api/users', require('../routes/users'));
+  app.use('/api/users', require('./routes/users'));
+  console.log('✅ Users routes loaded');
 } catch (err) {
-  console.error('Failed to load users routes:', err.message);
-  app.use('/api/users', (req, res) => res.status(500).json({ error: 'Users module failed to load' }));
+  console.error('❌ Users routes failed:', err.message);
 }
 
 try {
-  app.use('/api/posts', require('../routes/posts'));
+  app.use('/api/posts', require('./routes/posts'));
+  console.log('✅ Posts routes loaded');
 } catch (err) {
-  console.error('Failed to load posts routes:', err.message);
-  app.use('/api/posts', (req, res) => res.status(500).json({ error: 'Posts module failed to load' }));
+  console.error('❌ Posts routes failed:', err.message);
 }
 
 try {
-  app.use('/api/deadlines', require('../routes/deadlines'));
+  app.use('/api/deadlines', require('./routes/deadlines'));
+  console.log('✅ Deadlines routes loaded');
 } catch (err) {
-  console.error('Failed to load deadlines routes:', err.message);
+  console.error('❌ Deadlines routes failed:', err.message);
 }
 
 try {
-  app.use('/api/chat', require('../routes/chat'));
+  app.use('/api/chat', require('./routes/chat'));
+  console.log('✅ Chat routes loaded');
 } catch (err) {
-  console.error('Failed to load chat routes:', err.message);
+  console.error('❌ Chat routes failed:', err.message);
 }
 
 try {
-  app.use('/api/notifications', require('../routes/notifications'));
+  app.use('/api/notifications', require('./routes/notifications'));
+  console.log('✅ Notifications routes loaded');
 } catch (err) {
-  console.error('Failed to load notifications routes:', err.message);
+  console.error('❌ Notifications routes failed:', err.message);
 }
 
 try {
-  app.use('/api/settings', require('../routes/settings'));
+  app.use('/api/settings', require('./routes/settings'));
+  console.log('✅ Settings routes loaded');
 } catch (err) {
-  console.error('Failed to load settings routes:', err.message);
+  console.error('❌ Settings routes failed:', err.message);
 }
 
 try {
-  app.use('/api/activity-logs', require('../routes/activity'));
+  app.use('/api/activity-logs', require('./routes/activity'));
+  console.log('✅ Activity routes loaded');
 } catch (err) {
-  console.error('Failed to load activity routes:', err.message);
+  console.error('❌ Activity routes failed:', err.message);
 }
 
 // ============================================
@@ -153,8 +139,8 @@ try {
 app.use((req, res) => {
   res.status(404).json({ 
     error: 'Not found', 
-    method: req.method, 
-    path: req.path 
+    path: req.path,
+    method: req.method
   });
 });
 
@@ -163,7 +149,6 @@ app.use((req, res) => {
 // ============================================
 app.use((err, req, res, next) => {
   console.error('Express Error:', err.message);
-  console.error(err.stack);
   res.status(500).json({ 
     error: err.message,
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
